@@ -359,7 +359,7 @@ function director(dt){
   const p=G.t/G.len, L=G.lvl;
   if(!G.boss&&p<1){
     G.nextWave-=dt;
-    if(G.nextWave<=0&&enemies.length<450){spawnWave(p);G.nextWave=Math.max(.7,2.6-p*1.3-Math.min(L,8)*.08)*rnd(.7,1.3)}
+    if(G.nextWave<=0&&enemies.length<220){spawnWave(p);G.nextWave=Math.max(1.3,3.6-p*1.4-Math.min(L,8)*.12)*rnd(.8,1.2)}
     G.nextGate-=dt;
     if(G.nextGate<=0){spawnGates(p);G.nextGate=rnd(8,11.5)}
     G.carrierT-=dt;
@@ -378,19 +378,19 @@ function spawnE(type,x,y,o){
 function spawnWave(p){
   const L=G.lvl,R=VW+30;
   const kind=wpick([['line',3],['sine',2],['kami',p>.15||L>1?1.5:0],['block',p>.2?2+p*3:.6],['brute',p>.1||L>1?1.5:0],['tank',p>.4||L>2?1:0],['wall',p>.6||L>3?1.4:0]]);
-  if(kind==='line'){const n=ri(6,10)+L*2+Math.floor(p*12),y=rnd(60,H-60),amp=rnd(15,60);for(let i=0;i<n;i++)spawnE('swarm',R+i*24,y+rnd(-6,6),{amp})}
-  else if(kind==='sine'){const n=8+L+Math.floor(p*8),y=rnd(110,H-110),amp=rnd(60,130);for(let i=0;i<n;i++)spawnE('drone',R+i*32,y,{amp,ph:-i*.45})}
-  else if(kind==='block'){const cols=ri(4,6)+Math.floor(p*4)+Math.min(L,5),rows=ri(5,8),y0=rnd(40,H-40-rows*22);for(let c=0;c<cols;c++)for(let r=0;r<rows;r++)spawnE('swarm',R+c*22,y0+r*22,{spdMul:.8})}
-  else if(kind==='wall'){const cols=ri(2,3),gap=ri(2,H/23-4);for(let c=0;c<cols;c++)for(let r=0;r<23;r++){if(c===0&&(r===gap||r===gap+1))continue;spawnE('swarm',R+c*24,14+r*23,{spdMul:.7})}}
-  else if(kind==='kami'){const n=ri(3,5)+Math.min(L,6);for(let i=0;i<n;i++)spawnE('kami',R+i*40,rnd(40,H-40))}
+  if(kind==='line'){const n=ri(5,8)+L+Math.floor(p*6),y=rnd(60,H-60),amp=rnd(15,60);for(let i=0;i<n;i++)spawnE('swarm',R+i*24,y+rnd(-6,6),{amp})}
+  else if(kind==='sine'){const n=6+Math.floor(L/2)+Math.floor(p*4),y=rnd(110,H-110),amp=rnd(60,130);for(let i=0;i<n;i++)spawnE('drone',R+i*32,y,{amp,ph:-i*.45})}
+  else if(kind==='block'){const cols=ri(3,4)+Math.floor(p*2)+Math.min(L-1,3),rows=ri(4,6),y0=rnd(40,H-40-rows*22);for(let c=0;c<cols;c++)for(let r=0;r<rows;r++)spawnE('swarm',R+c*22,y0+r*22,{spdMul:.8})}
+  else if(kind==='wall'){const cols=L>3?2:1,gap=ri(2,H/23-5);for(let c=0;c<cols;c++)for(let r=0;r<23;r++){if(r>=gap&&r<=gap+2)continue;spawnE('swarm',R+c*24,14+r*23,{spdMul:.7})}}
+  else if(kind==='kami'){const n=ri(2,4)+Math.min(L,4);for(let i=0;i<n;i++)spawnE('kami',R+i*40,rnd(40,H-40))}
   else if(kind==='brute'){const n=1+(Math.random()<p?1:0)+(L>2?1:0);for(let i=0;i<n;i++)spawnE('brute',R+i*50,rnd(70,H-70),{stopX:VW-rnd(110,240)})}
   else if(kind==='tank'){spawnE('tank',R+20,rnd(80,H-80))}
 }
 function spawnGates(p){
-  const L=G.lvl,a=ri(3,6)+L*2+Math.floor(p*8);
+  const L=G.lvl,a=ri(2,4)+L+Math.floor(p*4);
   const mkG=()=>{const r=Math.random();
     if(r<.35)return{op:'add',v:a+ri(-2,4)};
-    if(r<.46)return{op:'mul',v:Math.random()<.9?2:3};
+    if(r<.43)return wing.length<12?{op:'mul',v:2}:{op:'add',v:a+ri(-1,2)};
     if(r<.84)return{op:'add',v:-(ri(6,12)+L*3+Math.floor(p*12))};
     return{op:'add',v:ri(2,a)}};
   let g1=mkG(),g2=mkG();
@@ -421,7 +421,7 @@ function passGate(g){
 
 /* ---------- boss ---------- */
 function spawnBoss(mini){
-  const L=G.lvl,hp=(mini?180:500)*(1+.5*(L-1));
+  const L=G.lvl,hp=(mini?150:380)*(1+.4*(L-1));
   G.boss={mini,x:VW+160,y:H/2,tx:VW-(mini?200:250),hp,mhp:hp,t:0,st:'enter',sT:0,atk:2,ang:-2.1,fl:0,r:mini?52:72,s:mini?.75:1,zy:H/2,zh:130,combo:0,name:mini?'AXTWÜTERICH':'AXTKOLOSS'};
   G.banner={t:'⚠ '+G.boss.name+' ⚠',s:mini?'Ein Monster mit Axt!':'Der Endgegner!',l:2.6,warn:true};
   SFX.roar();G.shake=10;
@@ -446,7 +446,7 @@ function updBoss(dt){
     else if(B.st==='recover'){B.sT-=dt;if(B.sT<=0){if(B.combo>0){B.combo--;startRaise(B,true)}else{B.st='idle';B.atk=ph2?1:1.7}}}
   }
 }
-function startRaise(B,fast){B.st='raise';B.sT=(B.hp<B.mhp*.5?.7:.95)*(fast?.85:1);B.zy=clamp(P.y,40,H-40);B.zh=B.mini?110:140;SFX.warn()}
+function startRaise(B,fast){const ph2=B.hp<B.mhp*.5;B.st='raise';B.sT=(B.mini?(ph2?.6:.75):(ph2?.42:.55))*(fast?.85:1);B.zy=clamp(P.y,40,H-40);B.zh=B.mini?110:140;SFX.warn()}
 function bossAttack(B,ph2){
   const r=Math.random();
   if(r<.55){B.combo=ph2&&!B.mini?1:0;startRaise(B)}
@@ -485,7 +485,7 @@ function collect(o){
   SFX.power();burst(o.x,o.y,'#ff0',24,220,.5,3);ring(o.x,o.y,50,'#ff8');
   if(o.sub==='weapon'){P.w=o.w;addText(P.x+50,P.y,WPN[o.w].name+'!',WPN[o.w].col,26,1.4)}
   else if(o.sub==='power'){if(P.wl<WMAX){P.wl++;addText(P.x+50,P.y,'Waffe Stufe '+P.wl+'!','#ff0',24,1.4)}else{G.crys+=5;addText(P.x+50,P.y,'Max! +5 ◆','#7ff',22)}}
-  else if(o.sub==='team'){const n=5+G.lvl;addWing(n);addText(P.x+50,P.y,'+'+n+' Team!','#5f5',24,1.4)}
+  else if(o.sub==='team'){const n=2+Math.floor(G.lvl/2);addWing(n);addText(P.x+50,P.y,'+'+n+' Team!','#5f5',24,1.4)}
   else if(o.sub==='shield'){P.hp=Math.min(P.maxHp,P.hp+1);addText(P.x+50,P.y,'+1 Schild','#6cf',24,1.4)}
 }
 
@@ -523,10 +523,10 @@ function updEnemies(dt){
         break;
       case'brute':
         if(e.x>e.stopX)e.x+=e.vx*dt;
-        else{e.y=e.by+Math.sin(e.t*1.3)*40;e.ft-=dt;if(e.ft<=0){aimShot(e.x-18,e.y+6,220*bs);e.ft=Math.max(.9,1.8-.1*L)}if(e.t>10){e.stopX=-999;e.vx=-170}}
+        else{e.y=e.by+Math.sin(e.t*1.3)*40;e.ft-=dt;if(e.ft<=0){aimShot(e.x-18,e.y+6,220*bs);e.ft=Math.max(1.4,2.4-.1*L)}if(e.t>10){e.stopX=-999;e.vx=-170}}
         break;
       case'tank':
-        e.x+=e.vx*dt;e.ft-=dt;if(e.ft<=0){fan(e.x-26,e.y,5,.7,190*bs,Math.atan2(P.y-e.y,P.x-e.x));e.ft=2.6}
+        e.x+=e.vx*dt;e.ft-=dt;if(e.ft<=0){fan(e.x-26,e.y,3,.5,190*bs,Math.atan2(P.y-e.y,P.x-e.x));e.ft=3}
         break;
     }
     if(e.x<-80||e.y<-120||e.y>H+120)e.dead=true,e.gone=true;
@@ -622,7 +622,7 @@ function update(dt){
     }
     b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
     if(b.life<=0||b.x>VW+40||b.x<-40||b.y<-40||b.y>H+40){b.dead=true;continue}
-    for(const g of gates){if(!g.used&&Math.abs(b.x-g.x)<14){hitGate(g,b.y<H/2?0:1,b.dmg);b.dead=true;break}}
+    for(const g of gates){if(!g.used&&Math.abs(b.x-g.x)<14){hitGate(g,b.y<H/2?0:1,b.small?b.dmg*.33:b.dmg);b.dead=true;break}}
     if(b.dead)continue;
     if(B&&B.st!=='dying'&&B.st!=='enter'&&(b.x-B.x)**2+(b.y-B.y)**2<(B.r+b.r)**2){
       if(b.aoe)rocketBoom(b);else{hurtBoss(b.dmg);burst(b.x,b.y,b.c,2,100,.15,2)}
