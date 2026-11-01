@@ -16,8 +16,8 @@ Am Handy die Seite öffnen und „Zum Home-Bildschirm hinzufügen“ wählen (iP
 
 ## So läuft ein Level
 
-- **Tore:** Immer wieder kommen zwei Tore nebeneinander, eines links und eines rechts. Grüne Tore vergrößern dein Team (`+8`, `×2`, `×3`), rote verkleinern es (`−5`). Schießt du auf ein Tor, steigt seine Zahl. So wird auch aus einem roten Tor ein grünes.
-- **Team:** Deine Begleiter (grüne Mini-Schiffe) fliegen in Formation um dich herum und schießen mit. Wer ein Alien rammt oder getroffen wird, ist weg. Höchstens 100 passen ins Team, was darüber hinausgeht, gibt Kristalle.
+- **Tore:** Immer wieder kommen zwei Tore nebeneinander, eines links und eines rechts. Grüne Tore vergrößern dein Team (`+8`, `×2`, selten `×3`), rote verkleinern es (`−15`). Schießt du auf ein Tor, steigt seine Zahl langsam. Der kleine Balken unter der Zahl zeigt, wie weit es noch bis zum nächsten Punkt ist. Aus einem roten Tor ein grünes zu machen, kostet also richtig Feuerkraft.
+- **Team:** Deine Begleiter (grüne Mini-Schiffe) fliegen in Formation um dich herum und schießen mit. Wer getroffen wird oder einen größeren Gegner rammt, ist weg. Kleine Schwärmer und Kamikaze-Pfeile übersteht ein Begleiter manchmal. Höchstens 100 passen ins Team, was darüber hinausgeht, gibt Kristalle.
 - **Gegner:** Lila Schwärmer (kommen in Massen, sogar als Wand quer über den Bildschirm mit einer Lücke), rote Untertassen, orange Kamikaze-Pfeile, grüne Glotzer, die zurückschießen, und gepanzerte Käfer. Goldene Frachter haben immer eine Kiste dabei.
 - **Axtmonster:** Zur Hälfte des Levels kommt der **Axtwüterich**, am Ende der **Axtkoloss**. Wenn das Monster die Axt hebt, blinkt unter ihm eine rote Bahn: Raus da! Der Hieb fegt die ganze Bahn bis nach unten leer, auch dein Team.
 - **Schilde:** Du hältst 3 Treffer aus (mit Verbesserungen mehr), nach einem Treffer bist du kurz unverwundbar.
