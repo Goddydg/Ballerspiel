@@ -10,7 +10,10 @@ Am Handy die Seite öffnen und „Zum Home-Bildschirm hinzufügen“ wählen (iP
 
 ## Steuerung
 
-- **Handy:** Finger irgendwo auf den Bildschirm legen und ziehen, am besten unterhalb des Schiffs. Das Schiff macht dieselbe Bewegung wie der Finger (etwas verstärkt), springt aber nicht zum Finger. So verdeckt der Finger nichts.
+Im Menü wählst du unter **Steuerung** zwischen **Finger** und **Neigen**:
+
+- **Neigen:** Das Schiff fährt in die Richtung, in die du das Handy kippst: rechts/links und nach vorn/hinten. Je stärker du neigst, desto schneller fährt es. Die Haltung beim Levelstart gilt als Mitte. Im Pausemenü kannst du sie mit „Neigen: neu ausrichten“ neu festlegen. Am iPhone fragt Safari einmal nach der Erlaubnis für Bewegung und Ausrichtung. Mit dem Finger ziehen geht zusätzlich immer.
+- **Finger (Handy):** Finger irgendwo auf den Bildschirm legen und ziehen, am besten unterhalb des Schiffs. Das Schiff macht dieselbe Bewegung wie der Finger (etwas verstärkt), springt aber nicht zum Finger. So verdeckt der Finger nichts.
 - **PC:** Pfeiltasten oder WASD, alternativ mit der Maus ziehen. `P` oder `Esc` = Pause.
 - Geschossen wird automatisch.
 
@@ -19,7 +22,7 @@ Am Handy die Seite öffnen und „Zum Home-Bildschirm hinzufügen“ wählen (iP
 - **Tore:** Immer wieder kommen zwei Tore nebeneinander, eines links und eines rechts. Grüne Tore vergrößern dein Team (`+5`, und solange dein Team klein ist, auch `×2`), rote verkleinern es (`−15`). Schießt du auf ein Tor, steigt seine Zahl langsam (die Schüsse deiner Begleiter zählen nur zu einem Drittel). Der kleine Balken unter der Zahl zeigt, wie weit es noch bis zum nächsten Punkt ist. Aus einem roten Tor ein grünes zu machen, kostet also richtig Feuerkraft.
 - **Team:** Deine Begleiter (grüne Mini-Schiffe) fliegen in Formation um dich herum und schießen mit. Wer getroffen wird oder einen größeren Gegner rammt, ist weg. Kleine Schwärmer und Kamikaze-Pfeile übersteht ein Begleiter manchmal. Höchstens 100 passen ins Team, was darüber hinausgeht, gibt Kristalle.
 - **Gegner:** Lila Schwärmer (kommen in Massen, sogar als Wand quer über den Bildschirm mit einer Lücke), rote Untertassen, orange Kamikaze-Pfeile, grüne Glotzer, die zurückschießen, und gepanzerte Käfer. Goldene Frachter haben immer eine Kiste dabei.
-- **Axtmonster:** Zur Hälfte des Levels kommt der **Axtwüterich**, am Ende der **Axtkoloss**. Wenn das Monster die Axt hebt, blinkt unter ihm eine rote Bahn: Schnell raus da, beim Axtkoloss bleibt kaum eine halbe Sekunde! Der Hieb fegt die ganze Bahn bis nach unten leer, auch dein Team.
+- **Axtmonster:** Zur Hälfte des Levels kommt der **Axtwüterich**, am Ende der **Axtkoloss**, der deutlich mehr aushält. Wenn das Monster die Axt hebt, blinkt unter ihm eine rote Bahn: Schnell raus da, beim Axtkoloss bleibt kaum eine halbe Sekunde! Der Hieb fegt die ganze Bahn bis nach unten leer, auch dein Team.
 - **Schilde:** Du hältst 3 Treffer aus (mit Verbesserungen mehr), nach einem Treffer bist du kurz unverwundbar.
 
 ## Beute

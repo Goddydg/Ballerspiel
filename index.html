@@ -64,6 +64,13 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 .card span{font-size:12px;color:#ffe9b0;font-weight:600}
 .card em{font-size:11px;color:#c9a96a;font-style:normal}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.ctrl{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ctrl small{color:#9bd;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.seg{display:flex;gap:0}
+.seg button{border-radius:0;min-width:120px;text-transform:none;letter-spacing:0;opacity:.6;box-shadow:none}
+.seg button:first-child{border-radius:10px 0 0 10px}.seg button:last-child{border-radius:0 10px 10px 0;border-left:0}
+.seg button.on{opacity:1;border-color:var(--gold);background:rgba(70,50,10,.85);box-shadow:0 0 12px rgba(255,211,77,.5)}
+#ctrlMsg{color:#ff8a96;font-size:12px;font-weight:700;max-width:320px}
 #pauseBtn{position:fixed;top:max(8px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));width:44px;height:44px;padding:0;font-size:16px;opacity:.75;z-index:5}
 </style>
 </head>
@@ -83,11 +90,16 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
   <div class="row">
     <button id="hangarBtn">Hangar <span class="cr" id="menuCr"></span></button>
   </div>
+  <div class="ctrl">
+    <small>Steuerung</small>
+    <div class="seg"><button id="ctFinger">☝ Finger</button><button id="ctTilt">📱 Neigen</button></div>
+    <div id="ctrlMsg"></div>
+  </div>
   <div class="row">
     <button id="sndBtn"></button>
     <button id="musBtn"></button>
   </div>
-  <div class="help">Finger irgendwo auf dem Bildschirm ziehen = Schiff steuern (am PC: Pfeiltasten oder Maus ziehen). Geschossen wird automatisch.<br>Die Aliens kommen von oben. Flieg durch grüne Tore, damit dein Team wächst. Beschieß die Tore vorher, dann werden sie besser!</div>
+  <div class="help"><span id="helpCtrl"></span> Am PC: Pfeiltasten oder Maus ziehen. Geschossen wird automatisch.<br>Die Aliens kommen von oben. Flieg durch grüne Tore, damit dein Team wächst. Beschieß die Tore vorher, dann werden sie besser!</div>
   <div class="portrait-hint">Tipp: Handy hochkant halten, dann siehst du mehr.</div>
 </div>
 
@@ -102,6 +114,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
   <h2>Pause</h2>
   <button class="big" id="resBtn">Weiter</button>
   <div class="row"><button id="pSnd"></button><button id="pMus"></button></div>
+  <button id="calBtn">Neigen: neu ausrichten</button>
   <button id="quitBtn">Aufgeben</button>
 </div>
 
@@ -139,7 +152,7 @@ function ell(g,x,y,rx,ry){g.beginPath();g.ellipse(x,y,rx,ry,0,0,TAU);g.fill()}
 
 /* ---------- save ---------- */
 const SAVE_KEY='ballerspiel-save';
-const S={crystals:0,level:1,maxLevel:1,up:{dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},sound:true,music:true};
+const S={crystals:0,level:1,maxLevel:1,up:{dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},sound:true,music:true,ctrl:'finger'};
 try{const d=JSON.parse(localStorage.getItem(SAVE_KEY));if(d){const up=Object.assign(S.up,d.up||{});Object.assign(S,d);S.up=up}}catch(e){}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 
@@ -331,7 +344,8 @@ function startLevel(L){
   wing=[];bullets=[];ebul=[];enemies=[];loot=[];parts=[];gates=[];texts=[];bolts=[];rings=[];waves=[];
   addWing(3+2*S.up.wing,true);
   makeNebula(L);
-  paused=false;drag=null;
+  paused=false;drag=null;TILT.warned=false;tiltCalibrate();
+  if(S.ctrl==='tilt')G.banner.s+=' · Neigen zum Steuern';
   showScreen(null);
 }
 
@@ -421,7 +435,7 @@ function passGate(g){
 
 /* ---------- boss ---------- */
 function spawnBoss(mini){
-  const L=G.lvl,hp=(mini?150:380)*(1+.4*(L-1));
+  const L=G.lvl,hp=(mini?150:800)*(1+.4*(L-1));
   G.boss={mini,x:VW+160,y:H/2,tx:VW-(mini?200:250),hp,mhp:hp,t:0,st:'enter',sT:0,atk:2,ang:-2.1,fl:0,r:mini?52:72,s:mini?.75:1,zy:H/2,zh:130,combo:0,name:mini?'AXTWÜTERICH':'AXTKOLOSS'};
   G.banner={t:'⚠ '+G.boss.name+' ⚠',s:mini?'Ein Monster mit Axt!':'Der Endgegner!',l:2.6,warn:true};
   SFX.roar();G.shake=10;
@@ -586,11 +600,40 @@ function hurtPlayer(){
     for(let i=wing.length-1;i>=0;i--)killWing(i);
   }else addText(P.x+40,P.y,'Schild −1','#f66',20);
 }
+/* ---------- tilt control ---------- */
+// Velocity control from device tilt, relative to the pose at level start (calibration).
+const TILT={beta:null,gamma:null,b0:0,g0:0,cal:true,warned:false};
+addEventListener('deviceorientation',e=>{
+  if(e.beta==null||e.gamma==null)return;
+  TILT.beta=e.beta;TILT.gamma=e.gamma;
+  if(TILT.cal){TILT.b0=e.beta;TILT.g0=e.gamma;TILT.cal=false}
+});
+function tiltCalibrate(){if(TILT.beta!=null){TILT.b0=TILT.beta;TILT.g0=TILT.gamma;TILT.cal=false}else TILT.cal=true}
+function tiltPermission(){
+  const D=window.DeviceOrientationEvent;
+  if(!D)return Promise.resolve(false);
+  if(typeof D.requestPermission==='function')return D.requestPermission().then(r=>r!=='denied').catch(()=>false);
+  return Promise.resolve(true);
+}
+function tiltAxes(){
+  const db=TILT.beta-TILT.b0;let dg=TILT.gamma-TILT.g0;
+  if(dg>90)dg-=180;if(dg<-90)dg+=180;
+  const ang=((screen.orientation&&screen.orientation.angle)??window.orientation??0)%360;
+  if(ang===90)return[db,dg];
+  if(ang===270||ang===-90)return[-db,-dg];
+  if(ang===180)return[-dg,db];
+  return[dg,-db]; // [sideways, forward]
+}
+const tiltCurve=a=>{const d=Math.abs(a)<2?0:a-Math.sign(a)*2;return clamp(d/16,-1,1)};
 function controls(dt){
   if(P.dead)return;
   const sp=420*dt;
   if(keys.ArrowLeft||keys.KeyA)P.y-=sp;if(keys.ArrowRight||keys.KeyD)P.y+=sp;
   if(keys.ArrowUp||keys.KeyW)P.x+=sp;if(keys.ArrowDown||keys.KeyS)P.x-=sp;
+  if(S.ctrl==='tilt'){
+    if(TILT.beta!=null){const[lat,fwd]=tiltAxes();P.y+=tiltCurve(lat)*560*dt;P.x+=tiltCurve(fwd)*560*dt}
+    else if(G.time>2&&!TILT.warned){TILT.warned=true;addText(P.x+120,P.y,'Neigen geht hier nicht – zieh mit dem Finger','#ffd34d',18,3)}
+  }
   clampP();
 }
 function clampP(){P.x=clamp(P.x,30,VW*.72);P.y=clamp(P.y,18,H-18)}
@@ -935,9 +978,15 @@ function showScreen(id){
 }
 function togglePause(){
   paused=!paused;SFX.click();
-  if(paused){refreshToggles();showScreen('pause');$('pauseBtn').classList.add('hidden')}else showScreen(null);
+  if(paused){refreshToggles();showScreen('pause');$('pauseBtn').classList.add('hidden')}else{tiltCalibrate();showScreen(null)}
+}
+function refreshCtrl(){
+  $('ctFinger').classList.toggle('on',S.ctrl!=='tilt');$('ctTilt').classList.toggle('on',S.ctrl==='tilt');
+  $('helpCtrl').textContent=S.ctrl==='tilt'?'Handy neigen = Schiff steuern. Die Haltung beim Start ist die Mitte. Ziehen mit dem Finger geht zusätzlich.':'Finger irgendwo auf dem Bildschirm ziehen = Schiff steuern.';
+  $('calBtn').classList.toggle('hidden',S.ctrl!=='tilt');
 }
 function refreshToggles(){
+  refreshCtrl();
   for(const id of['sndBtn','pSnd'])$(id).textContent='Ton: '+(S.sound?'an':'aus');
   for(const id of['musBtn','pMus'])$(id).textContent='Musik: '+(S.music?'an':'aus');
 }
@@ -1048,11 +1097,17 @@ function drawChest(){
 
 /* ---------- buttons ---------- */
 const on=(id,f)=>$(id).addEventListener('click',()=>{audio();SFX.click();f()});
-on('playBtn',()=>startLevel(S.level));
+on('playBtn',()=>{if(S.ctrl==='tilt')tiltPermission();startLevel(S.level)});
 on('lvPrev',()=>{S.level--;refreshMenu()});
 on('lvNext',()=>{S.level++;refreshMenu()});
 on('hangarBtn',openHangar);
 on('hgBack',toMenu);
+on('ctFinger',()=>{S.ctrl='finger';save();$('ctrlMsg').textContent='';refreshCtrl()});
+on('ctTilt',()=>{tiltPermission().then(ok=>{
+  if(ok){S.ctrl='tilt';$('ctrlMsg').textContent=''}
+  else{S.ctrl='finger';$('ctrlMsg').textContent='Neigen ist nicht erlaubt oder wird nicht unterstützt. Am iPhone: Safari-Einstellungen → „Bewegungs- & Ausrichtungszugriff“ erlauben, dann Seite neu laden.'}
+  save();refreshCtrl()})});
+on('calBtn',()=>{tiltCalibrate();addText(P.x+80,P.y,'Neu ausgerichtet','#ffd34d',18,1.5)});
 on('sndBtn',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('musBtn',()=>{S.music=!S.music;save();refreshToggles()});
 on('pSnd',()=>{S.sound=!S.sound;save();refreshToggles()});
