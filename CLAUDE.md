@@ -1,6 +1,6 @@
 # Ballerspiel
 
-Horizontales Weltraum-Ballerspiel (Retro-Shoot-'em-up) mit Team-Wachstum über Tore, Massen von Gegnern, Axt-Bossen, Beute und Belohnung am Levelende. Läuft im Browser, veröffentlicht über GitHub Pages: https://goddydg.github.io/Ballerspiel/
+Vertikales Weltraum-Ballerspiel (Retro-Shoot-'em-up, Gegner kommen von oben, Hochformat) mit Team-Wachstum über Tore, Massen von Gegnern, Axt-Bossen, Beute und Belohnung am Levelende. Läuft im Browser, veröffentlicht über GitHub Pages: https://goddydg.github.io/Ballerspiel/
 
 ## Zusammenarbeit
 
@@ -11,7 +11,7 @@ Horizontales Weltraum-Ballerspiel (Retro-Shoot-'em-up) mit Team-Wachstum über T
 
 ## Aufbau
 
-Alles in `index.html`. Abschnitte im Skript (`/* ---------- name ---------- */`): utils, save (`localStorage` `ballerspiel-save`, Hangar-Verbesserungen `UPG`, Waffen `WPN`), canvas (Welt 540 hoch, Breite `VW` 720–1200), sprites (vorgerenderte Offscreen-Canvases, `…F` = weiße Treffer-Version), sound (Web Audio + Chiptune-Schleife), state (`ET` Gegnertypen, `startLevel`), team (Begleiter, Formation `slot`), director (Wellen, Tore), boss (Axtwüterich/Axtkoloss, Axthieb als Schockwelle), loot, enemies, weapons, collision grid, update, drawing, screens, level reward (Truhe, Karten).
+Alles in `index.html`. Abschnitte im Skript (`/* ---------- name ---------- */`): utils, save (`localStorage` `ballerspiel-save`, Hangar-Verbesserungen `UPG`, Waffen `WPN`), canvas (Weltkoordinaten: `x` = nach vorn/oben, Länge `VW` 720–1200; `y` = seitlich, 540 breit; die Welt wird um −90° gedreht gezeichnet, Bildschirmpunkt = `toS(x,y)` = `(y, VW−x)`; Texte und HUD in `drawLabels`/`drawTexts`/`drawHUD` in Bildschirmkoordinaten), sprites (vorgerenderte Offscreen-Canvases, `…F` = weiße Treffer-Version), sound (Web Audio + Chiptune-Schleife), state (`ET` Gegnertypen, `startLevel`), team (Begleiter, Formation `slot`), director (Wellen, Tore), boss (Axtwüterich/Axtkoloss, Axthieb als Schockwelle), loot, enemies, weapons, collision grid, update, drawing, screens, level reward (Truhe, Karten).
 
 Weitere Dateien: `manifest.webmanifest` und `icons/` (Home-Bildschirm-Icon, neu erzeugen mit `node icons/make-icons.js`), `tools/smoke-test.js`.
 
@@ -21,4 +21,4 @@ Test-Hooks: `window.BS` (`startLevel`, `update`, `spawnBoss`, `winLevel` …).
 
 - `node tools/smoke-test.js [1,3]` spielt Levels mit Autopilot (unverwundbar) und meldet Skriptfehler.
 - Bildschirmfotos mit Playwright: Spiel per `BS.startLevel(n)` starten und mit `BS.update(1/60)` in einer Schleife vorspulen.
-- Immer auf Handygröße prüfen, quer (844×390) und hoch (390×844): kein seitliches Scrollen, Menüs scrollbar statt abgeschnitten.
+- Immer auf Handygröße prüfen, vor allem hoch (390×844), aber auch quer (844×390): kein seitliches Scrollen, Menüs scrollbar statt abgeschnitten.
