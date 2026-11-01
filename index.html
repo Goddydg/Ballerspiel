@@ -49,6 +49,16 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 .pips i{flex:1;height:6px;border-radius:3px;background:#1d2b44}
 .pips i.on{background:var(--neon);box-shadow:0 0 6px var(--neon)}
 .up button{min-height:38px;padding:6px 10px;font-size:14px}
+#slotList{display:flex;flex-direction:column;gap:8px;width:min(480px,100%)}
+.slot{background:var(--panel);border:1px solid #2a4a7a;border-radius:12px;padding:10px;display:flex;align-items:center;gap:10px;text-align:left}
+.slot div{flex:1;min-width:0}.slot b{display:block;color:#fff}.slot span{font-size:12px;color:#9bd}
+.slot button{min-height:38px;padding:6px 10px;font-size:13px}
+.cur{background:rgba(20,60,50,.85);border:1px solid #3dff9a;border-radius:12px;padding:10px 14px;width:min(480px,100%);text-align:left}
+.cur b{color:#bfffd6}.cur span{display:block;font-size:12px;color:#9bd}
+#dlg{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,8,.75)}
+#dlg .box{background:#0d0a2a;border:2px solid var(--neon);border-radius:14px;padding:18px;max-width:360px;display:flex;flex-direction:column;gap:10px;text-align:center;box-shadow:0 0 24px rgba(60,240,255,.35)}
+#dlg p{margin:0 0 4px;line-height:1.4}
+#dlg button.danger{border-color:#ff4f6d;box-shadow:0 0 10px rgba(255,79,109,.4)}
 #win{justify-content:flex-start}#win .wincontent{margin:auto 0}
 #win{background:radial-gradient(ellipse at center,rgba(60,20,90,.75),rgba(3,2,10,.92))}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
@@ -89,6 +99,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
   <button class="big" id="playBtn">▶ Los geht's</button>
   <div class="row">
     <button id="hangarBtn">Hangar <span class="cr" id="menuCr"></span></button>
+    <button id="slotsBtn">Spielstände</button>
   </div>
   <div class="ctrl">
     <small>Steuerung</small>
@@ -109,6 +120,16 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
   <div id="upList"></div>
   <button id="hgBack">Zurück</button>
 </div>
+
+<div id="slots" class="screen hidden">
+  <h2>Spielstände</h2>
+  <div class="cur" id="curSlot"></div>
+  <div class="row"><button id="slotSave">Aktuellen Stand speichern</button><button id="newGame">Neues Spiel</button></div>
+  <div id="slotList"></div>
+  <button id="slotsBack">Zurück</button>
+</div>
+
+<div id="dlg" class="hidden"><div class="box"><p id="dlgTxt"></p><div id="dlgBtns" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
 
 <div id="pause" class="screen hidden">
   <h2>Pause</h2>
@@ -155,6 +176,14 @@ const SAVE_KEY='ballerspiel-save';
 const S={crystals:0,level:1,maxLevel:1,up:{dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},sound:true,music:true,ctrl:'finger'};
 try{const d=JSON.parse(localStorage.getItem(SAVE_KEY));if(d){const up=Object.assign(S.up,d.up||{});Object.assign(S,d);S.up=up}}catch(e){}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+/* saved games: progress only (level, crystals, upgrades); settings stay */
+const SLOT_KEY='ballerspiel-slots',SLOT_MAX=8;
+function loadSlots(){try{return JSON.parse(localStorage.getItem(SLOT_KEY))||[]}catch(e){return[]}}
+function saveSlots(a){try{localStorage.setItem(SLOT_KEY,JSON.stringify(a))}catch(e){}}
+const progress=()=>({crystals:S.crystals,level:S.level,maxLevel:S.maxLevel,up:Object.assign({},S.up)});
+function storeCurrent(){const a=loadSlots();a.unshift({date:Date.now(),p:progress()});while(a.length>SLOT_MAX)a.pop();saveSlots(a)}
+function applyProgress(p){S.crystals=p.crystals;S.level=p.level;S.maxLevel=p.maxLevel;S.up=Object.assign({dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},p.up);save()}
+function resetProgress(){applyProgress({crystals:0,level:1,maxLevel:1,up:{}})}
 
 const UPG=[
   {k:'dmg',name:'Schaden',desc:'+15 % Schaden für alle',max:10,cost:60},
@@ -1111,12 +1140,46 @@ function drawChest(){
   }
 }
 
+/* ---------- saved games ---------- */
+function dialog(txt,btns){
+  $('dlgTxt').textContent=txt;const B=$('dlgBtns');B.innerHTML='';
+  for(const[label,f,cls]of btns){const b=document.createElement('button');b.textContent=label;if(cls)b.className=cls;
+    b.onclick=()=>{SFX.click();$('dlg').classList.add('hidden');if(f)f()};B.appendChild(b)}
+  $('dlg').classList.remove('hidden');
+}
+const upSum=p=>Object.values(p.up||{}).reduce((a,b)=>a+b,0);
+const progTxt=p=>`Level ${p.maxLevel} erreicht · ◆ ${p.crystals} · ${upSum(p)} Verbesserungen`;
+function openSlots(){
+  $('curSlot').innerHTML=`<b>Aktuelles Spiel</b><span>${progTxt(progress())}</span>`;
+  const L=$('slotList'),a=loadSlots();L.innerHTML='';
+  if(!a.length)L.innerHTML='<div class="help">Noch keine gespeicherten Spielstände.</div>';
+  a.forEach((sl,i)=>{
+    const d=document.createElement('div');d.className='slot';
+    const dt=new Date(sl.date).toLocaleString('de-DE',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    d.innerHTML=`<div><b>Level ${sl.p.maxLevel} · ◆ ${sl.p.crystals}</b><span>${dt} · ${upSum(sl.p)} Verbesserungen</span></div>`;
+    const ld=document.createElement('button');ld.textContent='Laden';
+    ld.onclick=()=>{SFX.click();dialog('Diesen Spielstand laden? Dein aktuelles Spiel wird dabei ersetzt.',[
+      ['Aktuelles speichern und laden',()=>{const keep=sl.p;storeCurrent();applyProgress(keep);openSlots()}],
+      ['Laden ohne Speichern',()=>{applyProgress(sl.p);openSlots()},'danger'],['Abbrechen']])};
+    const del=document.createElement('button');del.textContent='✕';del.setAttribute('aria-label','Löschen');
+    del.onclick=()=>{SFX.click();dialog('Diesen Spielstand löschen?',[['Löschen',()=>{const b=loadSlots();b.splice(i,1);saveSlots(b);openSlots()},'danger'],['Abbrechen']])};
+    d.append(ld,del);L.appendChild(d);
+  });
+  showScreen('slots');
+}
+
 /* ---------- buttons ---------- */
 const on=(id,f)=>$(id).addEventListener('click',()=>{audio();SFX.click();f()});
 on('playBtn',()=>{if(S.ctrl==='tilt')tiltPermission();startLevel(S.level)});
 on('lvPrev',()=>{S.level--;refreshMenu()});
 on('lvNext',()=>{S.level++;refreshMenu()});
 on('hangarBtn',openHangar);
+on('slotsBtn',openSlots);
+on('slotsBack',toMenu);
+on('slotSave',()=>{storeCurrent();openSlots();dialog('Spielstand gespeichert. Du kannst ihn hier jederzeit wieder laden.',[['OK']])});
+on('newGame',()=>dialog('Komplett neu anfangen? Level, Kristalle und Hangar-Verbesserungen werden zurückgesetzt.',[
+  ['Speichern und neu starten',()=>{storeCurrent();resetProgress();toMenu()}],
+  ['Neu starten ohne Speichern',()=>{resetProgress();toMenu()},'danger'],['Abbrechen']]));
 on('hgBack',toMenu);
 on('ctFinger',()=>{S.ctrl='finger';save();$('ctrlMsg').textContent='';refreshCtrl()});
 on('ctTilt',()=>{tiltPermission().then(ok=>{

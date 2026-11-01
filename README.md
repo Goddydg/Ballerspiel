@@ -43,6 +43,16 @@ Kristalle ◆ fliegen dir zu, wenn du nah genug bist.
 - Am Levelende gibt es eine **Schatztruhe** (3× antippen) mit Bonus-Kristallen und danach **eine von drei Verbesserungen** gratis.
 - Im **Hangar** kaufst du mit Kristallen dauerhafte Verbesserungen (jede Stufe wird deutlich teurer): Schaden, Feuerrate, Startteam, Schilde, Magnet und Start-Waffenstufe.
 - Kristalle behältst du auch, wenn du abgeschossen wirst. Der Fortschritt wird im Browser gespeichert.
+
+## Spielstände und neues Spiel
+
+Im Menü unter **Spielstände**:
+
+- **Aktuellen Stand speichern:** legt eine Kopie deines Fortschritts an (erreichtes Level, Kristalle, Hangar-Verbesserungen). Bis zu 8 Spielstände werden aufgehoben, danach fällt der älteste weg.
+- **Neues Spiel:** fängt komplett bei Level 1 ohne Kristalle und Verbesserungen an. Vorher fragt das Spiel, ob du den alten Stand speichern willst.
+- **Laden:** holt einen gespeicherten Stand zurück, auf Wunsch wird das aktuelle Spiel vorher gespeichert. **✕** löscht einen Spielstand.
+- Ton, Musik und Steuerung bleiben dabei, wie du sie eingestellt hast.
+- Die Spielstände liegen im Browser des Handys. Löschst du die Browserdaten, sind sie weg.
 - Jedes Level ist länger und voller als das davor, die Gegner halten mehr aus.
 
 ## Technik
