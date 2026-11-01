@@ -13,6 +13,8 @@ Horizontales Weltraum-Ballerspiel (Retro-Shoot-'em-up) mit Team-Wachstum über T
 
 Alles in `index.html`. Abschnitte im Skript (`/* ---------- name ---------- */`): utils, save (`localStorage` `ballerspiel-save`, Hangar-Verbesserungen `UPG`, Waffen `WPN`), canvas (Welt 540 hoch, Breite `VW` 720–1200), sprites (vorgerenderte Offscreen-Canvases, `…F` = weiße Treffer-Version), sound (Web Audio + Chiptune-Schleife), state (`ET` Gegnertypen, `startLevel`), team (Begleiter, Formation `slot`), director (Wellen, Tore), boss (Axtwüterich/Axtkoloss, Axthieb als Schockwelle), loot, enemies, weapons, collision grid, update, drawing, screens, level reward (Truhe, Karten).
 
+Weitere Dateien: `manifest.webmanifest` und `icons/` (Home-Bildschirm-Icon, neu erzeugen mit `node icons/make-icons.js`), `tools/smoke-test.js`.
+
 Test-Hooks: `window.BS` (`startLevel`, `update`, `spawnBoss`, `winLevel` …).
 
 ## Testen

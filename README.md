@@ -4,6 +4,10 @@ Weltraum-Ballerspiel im Stil der 80er und 90er: Dein Schiff fliegt nach rechts, 
 
 **Spielen:** https://goddydg.github.io/Ballerspiel/
 
+## Auf den Home-Bildschirm
+
+Am Handy die Seite öffnen und „Zum Home-Bildschirm hinzufügen“ wählen (iPhone: Teilen-Knopf, Android: Menü ⋮). Dann startet das Spiel mit eigenem Icon im Vollbild, auf Android direkt im Querformat.
+
 ## Steuerung
 
 - **Handy:** Finger irgendwo auf den Bildschirm legen und ziehen. Das Schiff bewegt sich mit, der Finger verdeckt es aber nicht.
@@ -40,4 +44,4 @@ Kristalle ◆ fliegen dir zu, wenn du nah genug bist.
 
 ## Technik
 
-Alles steckt in `index.html` (Canvas, Web Audio für Geräusche und Chiptune-Musik, keine Abhängigkeiten, kein Build-Schritt). Schnelltest: `node tools/smoke-test.js` (braucht Playwright).
+Alles steckt in `index.html` (Canvas, Web Audio für Geräusche und Chiptune-Musik, keine Abhängigkeiten, kein Build-Schritt). Schnelltest: `node tools/smoke-test.js` (braucht Playwright). Icons neu erzeugen: `node icons/make-icons.js` (zeichnet mit den Figuren aus dem Spiel).
