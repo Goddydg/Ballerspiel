@@ -109,6 +109,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
   <div class="row">
     <button id="sndBtn"></button>
     <button id="musBtn"></button>
+    <button id="vibBtn"></button>
   </div>
   <div class="help"><span id="helpCtrl"></span> Am PC: Pfeiltasten oder Maus ziehen. Geschossen wird automatisch.<br>Die Aliens kommen von oben. Flieg durch grüne Tore, damit dein Team wächst. Beschieß die Tore vorher, dann werden sie besser!</div>
   <div class="portrait-hint">Tipp: Handy hochkant halten, dann siehst du mehr.</div>
@@ -134,7 +135,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 <div id="pause" class="screen hidden">
   <h2>Pause</h2>
   <button class="big" id="resBtn">Weiter</button>
-  <div class="row"><button id="pSnd"></button><button id="pMus"></button></div>
+  <div class="row"><button id="pSnd"></button><button id="pMus"></button><button id="pVib"></button></div>
   <button id="calBtn">Neigen: neu ausrichten</button>
   <button id="quitBtn">Aufgeben</button>
 </div>
@@ -173,7 +174,7 @@ function ell(g,x,y,rx,ry){g.beginPath();g.ellipse(x,y,rx,ry,0,0,TAU);g.fill()}
 
 /* ---------- save ---------- */
 const SAVE_KEY='ballerspiel-save';
-const S={crystals:0,level:1,maxLevel:1,up:{dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},sound:true,music:true,ctrl:'finger'};
+const S={crystals:0,level:1,maxLevel:1,up:{dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},sound:true,music:true,ctrl:'finger',vib:true};
 try{const d=JSON.parse(localStorage.getItem(SAVE_KEY));if(d){const up=Object.assign(S.up,d.up||{});Object.assign(S,d);S.up=up}}catch(e){}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 /* saved games: progress only (level, crystals, upgrades); settings stay */
@@ -769,10 +770,24 @@ function query(x,y,r,cb){
     for(const e of a){if(e.dead)continue;const dx=e.x-x,dy=e.y-y,rr_=e.r+r;if(dx*dx+dy*dy<rr_*rr_){if(cb(e)===true)return}}}
 }
 
+/* ---------- vibration ---------- */
+// Android: Vibration API. iPhone Safari has none; toggling a hidden <input switch> gives a short haptic tick on iOS 18+.
+let hapticLabel=null;
+function iosTick(){
+  if(!hapticLabel){const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.id='hapticSw';i.style.display='none';
+    hapticLabel=document.createElement('label');hapticLabel.htmlFor='hapticSw';hapticLabel.style.display='none';document.body.append(i,hapticLabel)}
+  hapticLabel.click();
+}
+function buzz(pattern){
+  if(!S.vib)return;
+  try{if(navigator.vibrate){navigator.vibrate(pattern);return}}catch(e){}
+  try{const n=Array.isArray(pattern)?Math.ceil(pattern.length/2):1;iosTick();for(let k=1;k<n;k++)setTimeout(iosTick,k*120)}catch(e){}
+}
+
 /* ---------- player ---------- */
 function hurtPlayer(){
   if(P.inv>0||P.dead||G.mode!=='play')return;
-  P.hp--;P.inv=1.6;G.shake=14;SFX.hurt();burst(P.x,P.y,'#f55',30,260,.6,3);
+  P.hp--;P.inv=1.6;G.shake=14;SFX.hurt();burst(P.x,P.y,'#f55',30,260,.6,3);buzz(P.hp<=0?[250,80,400]:160);
   if(P.hp<=0){
     P.dead=true;G.mode='dead';G.endT=2.4;SFX.bigboom();G.shake=24;
     burst(P.x,P.y,'#fff',60,400,1,4);burst(P.x,P.y,'#5cf',60,300,1.2,4);ring(P.x,P.y,200,'#fff',.6);
@@ -1228,6 +1243,7 @@ function refreshToggles(){
   refreshCtrl();
   for(const id of['sndBtn','pSnd'])$(id).textContent='Ton: '+(S.sound?'an':'aus');
   for(const id of['musBtn','pMus'])$(id).textContent='Musik: '+(S.music?'an':'aus');
+  for(const id of['vibBtn','pVib'])$(id).textContent='Vibration: '+(S.vib?'an':'aus');
 }
 function refreshMenu(){
   S.level=clamp(S.level,1,S.maxLevel);
@@ -1385,6 +1401,8 @@ on('sndBtn',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('musBtn',()=>{S.music=!S.music;save();refreshToggles()});
 on('pSnd',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('pMus',()=>{S.music=!S.music;save();refreshToggles()});
+const togVib=()=>{S.vib=!S.vib;save();refreshToggles();if(S.vib)buzz(80)};
+on('vibBtn',togVib);on('pVib',togVib);
 on('pauseBtn',()=>{if(G&&G.mode==='play'&&!paused)togglePause()});
 on('resBtn',togglePause);
 on('quitBtn',()=>{bankCrystals();toMenu()});
