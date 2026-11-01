@@ -22,7 +22,15 @@ Im Menü wählst du unter **Steuerung** zwischen **Finger** und **Neigen**:
 - **Tore:** Immer wieder kommen zwei Tore nebeneinander, eines links und eines rechts. Grüne Tore vergrößern dein Team (`+5`, und solange dein Team klein ist, auch `×2`), rote verkleinern es (`−15`). Schießt du auf ein Tor, steigt seine Zahl langsam (die Schüsse deiner Begleiter zählen nur zu einem Drittel). Der kleine Balken unter der Zahl zeigt, wie weit es noch bis zum nächsten Punkt ist. Aus einem roten Tor ein grünes zu machen, kostet also richtig Feuerkraft.
 - **Team:** Deine Begleiter (grüne Mini-Schiffe) fliegen in Formation um dich herum und schießen mit. Wer getroffen wird oder einen größeren Gegner rammt, ist weg. Kleine Schwärmer und Kamikaze-Pfeile übersteht ein Begleiter manchmal. Höchstens 100 passen ins Team, was darüber hinausgeht, gibt Kristalle.
 - **Gegner:** Lila Schwärmer (kommen in Massen, sogar als Wand quer über den Bildschirm mit einer Lücke), rote Untertassen, orange Kamikaze-Pfeile, grüne Glotzer, die zurückschießen, und gepanzerte Käfer. Goldene Frachter haben immer eine Kiste dabei.
-- **Axtmonster:** Zur Hälfte des Levels kommt der **Axtwüterich**, am Ende der **Axtkoloss**, der deutlich mehr aushält. Wenn das Monster die Axt hebt, zielt es noch auf dich. Erst kurz vor dem Hieb blinkt unter ihm eine rote Bahn: Schnell raus da! Beim Axtkoloss bleibt dafür nur etwa eine halbe Sekunde. Der Axtkoloss schlägt mehrmals hintereinander zu (in der Wut-Phase dreimal), schießt gezielte Kugelfächer und ruft Schwärmer und Kamikaze-Pfeile. Der Hieb fegt die ganze Bahn bis nach unten leer, auch dein Team.
+- **Bosse:** Zur Hälfte jedes Levels kommt der **Axtwüterich**. Wenn er die Axt hebt, zielt er noch auf dich; erst kurz vor dem Hieb blinkt unter ihm eine rote Bahn: Raus da! Am Levelende wartet ein **Endgegner**, jedes Level ein anderer (ab Level 6 von vorn, aber stärker):
+
+| Level | Endgegner | Fähigkeiten |
+| --- | --- | --- |
+| 1, 6, … | **Axtkoloss** | Hiebserien mit der Axt (rote Bahn), gezielte Kugelfächer, ruft Schwärmer und Kamikaze-Pfeile |
+| 2, 7, … | **Laserkrake** | Laservorhang: Mehrere Bahnen blinken pink, dann feuern die Laser – such die Lücke! Schießt Tintenkleckse, die dich verfolgen (abschießbar), und ruft Untertassen |
+| 3, 8, … | **Schwarmkönigin** | Von Leibwachen umkreist, die deine Schüsse abfangen. Legt Eier, aus denen nach ein paar Sekunden Schwärmer schlüpfen. Lässt Stacheln von oben regnen |
+| 4, 9, … | **Frostkoloss** | Eiszapfen fallen in markierten Bahnen (Dreiecke oben am Rand). Eiskugeln frieren dich ein, dann bist du kurz langsam. Eisschild: Solange er leuchtet, prallen deine Schüsse ab |
+| 5, 10, … | **Gravitron** | Erzeugt schwarze Löcher, die dich, dein Team und deine Schüsse anziehen – gegensteuern! Verschwindet, taucht woanders auf und feuert einen Kugelring. Spiralen aus Kugeln |
 - **Schilde:** Du hältst 3 Treffer aus (mit Verbesserungen mehr), nach einem Treffer bist du kurz unverwundbar.
 
 ## Beute
@@ -36,7 +44,7 @@ Kisten erkennst du an Farbe und Zeichen:
 | Blau ◯ | Ein Schild zurück |
 | Buchstabe in Waffenfarbe | Neue Waffe: **B**laster, **S**treuschuss, **L**aser (durchschlägt Gegner), **R**aketen (suchen ihr Ziel, Flächenschaden), Bli**z** (springt von Gegner zu Gegner) |
 
-Kristalle ◆ fliegen dir zu, wenn du nah genug bist.
+Kristalle ◆ fliegen dir zu, wenn du nah genug bist. Beute ist eher selten: Kisten lassen vor allem die dicken Gegner, die goldenen Frachter und die Bosse fallen.
 
 ## Belohnung und Hangar
 
