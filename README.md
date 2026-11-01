@@ -22,7 +22,7 @@ Im Menü wählst du unter **Steuerung** zwischen **Finger** und **Neigen**:
 - **Tore:** Immer wieder kommen zwei Tore nebeneinander, eines links und eines rechts. Grüne Tore vergrößern dein Team (`+5`, und solange dein Team klein ist, auch `×2`), rote verkleinern es (`−15`). Schießt du auf ein Tor, steigt seine Zahl langsam (die Schüsse deiner Begleiter zählen nur zu einem Drittel). Der kleine Balken unter der Zahl zeigt, wie weit es noch bis zum nächsten Punkt ist. Aus einem roten Tor ein grünes zu machen, kostet also richtig Feuerkraft.
 - **Team:** Deine Begleiter (grüne Mini-Schiffe) fliegen in Formation um dich herum und schießen mit. Wer getroffen wird oder einen größeren Gegner rammt, ist weg. Kleine Schwärmer und Kamikaze-Pfeile übersteht ein Begleiter manchmal. Höchstens 100 passen ins Team, was darüber hinausgeht, gibt Kristalle.
 - **Gegner:** Lila Schwärmer (kommen in Massen, sogar als Wand quer über den Bildschirm mit einer Lücke), rote Untertassen, orange Kamikaze-Pfeile, grüne Glotzer, die zurückschießen, und gepanzerte Käfer. Goldene Frachter haben immer eine Kiste dabei.
-- **Axtmonster:** Zur Hälfte des Levels kommt der **Axtwüterich**, am Ende der **Axtkoloss**, der deutlich mehr aushält. Wenn das Monster die Axt hebt, blinkt unter ihm eine rote Bahn: Schnell raus da, beim Axtkoloss bleibt kaum eine halbe Sekunde! Der Hieb fegt die ganze Bahn bis nach unten leer, auch dein Team.
+- **Axtmonster:** Zur Hälfte des Levels kommt der **Axtwüterich**, am Ende der **Axtkoloss**, der deutlich mehr aushält. Wenn das Monster die Axt hebt, zielt es noch auf dich. Erst kurz vor dem Hieb blinkt unter ihm eine rote Bahn: Schnell raus da! Beim Axtkoloss bleibt dafür nur etwa eine halbe Sekunde. Der Axtkoloss schlägt mehrmals hintereinander zu (in der Wut-Phase dreimal), schießt gezielte Kugelfächer und ruft Schwärmer und Kamikaze-Pfeile. Der Hieb fegt die ganze Bahn bis nach unten leer, auch dein Team.
 - **Schilde:** Du hältst 3 Treffer aus (mit Verbesserungen mehr), nach einem Treffer bist du kurz unverwundbar.
 
 ## Beute
@@ -41,7 +41,7 @@ Kristalle ◆ fliegen dir zu, wenn du nah genug bist.
 ## Belohnung und Hangar
 
 - Am Levelende gibt es eine **Schatztruhe** (3× antippen) mit Bonus-Kristallen und danach **eine von drei Verbesserungen** gratis.
-- Im **Hangar** kaufst du mit Kristallen dauerhafte Verbesserungen: Schaden, Feuerrate, Startteam, Schilde, Magnet und Start-Waffenstufe.
+- Im **Hangar** kaufst du mit Kristallen dauerhafte Verbesserungen (jede Stufe wird deutlich teurer): Schaden, Feuerrate, Startteam, Schilde, Magnet und Start-Waffenstufe.
 - Kristalle behältst du auch, wenn du abgeschossen wirst. Der Fortschritt wird im Browser gespeichert.
 - Jedes Level ist länger und voller als das davor, die Gegner halten mehr aus.
 

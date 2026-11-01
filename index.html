@@ -157,14 +157,14 @@ try{const d=JSON.parse(localStorage.getItem(SAVE_KEY));if(d){const up=Object.ass
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 
 const UPG=[
-  {k:'dmg',name:'Schaden',desc:'+15 % Schaden für alle',max:10,cost:30},
-  {k:'rate',name:'Feuerrate',desc:'+8 % schneller schießen',max:8,cost:35},
-  {k:'wing',name:'Startteam',desc:'+2 Begleiter beim Start',max:10,cost:40},
-  {k:'hp',name:'Schilde',desc:'+1 Schild (Treffer, die du aushältst)',max:4,cost:90},
-  {k:'mag',name:'Magnet',desc:'Beute aus größerer Entfernung einsammeln',max:5,cost:25},
-  {k:'wpn',name:'Waffenstufe',desc:'Startwaffe eine Stufe stärker',max:4,cost:100},
+  {k:'dmg',name:'Schaden',desc:'+15 % Schaden für alle',max:10,cost:60},
+  {k:'rate',name:'Feuerrate',desc:'+8 % schneller schießen',max:8,cost:70},
+  {k:'wing',name:'Startteam',desc:'+2 Begleiter beim Start',max:10,cost:80},
+  {k:'hp',name:'Schilde',desc:'+1 Schild (Treffer, die du aushältst)',max:4,cost:180},
+  {k:'mag',name:'Magnet',desc:'Beute aus größerer Entfernung einsammeln',max:5,cost:50},
+  {k:'wpn',name:'Waffenstufe',desc:'Startwaffe eine Stufe stärker',max:4,cost:200},
 ];
-const upCost=u=>Math.round(u.cost*Math.pow(S.up[u.k]+1,1.6));
+const upCost=u=>Math.round(u.cost*Math.pow(S.up[u.k]+1,1.8));
 
 const WPN={
   blaster:{name:'Blaster',col:'#5cf',ch:'B'},
@@ -435,7 +435,7 @@ function passGate(g){
 
 /* ---------- boss ---------- */
 function spawnBoss(mini){
-  const L=G.lvl,hp=(mini?150:800)*(1+.4*(L-1));
+  const L=G.lvl,hp=(mini?150:1000)*(1+.4*(L-1));
   G.boss={mini,x:VW+160,y:H/2,tx:VW-(mini?200:250),hp,mhp:hp,t:0,st:'enter',sT:0,atk:2,ang:-2.1,fl:0,r:mini?52:72,s:mini?.75:1,zy:H/2,zh:130,combo:0,name:mini?'AXTWÜTERICH':'AXTKOLOSS'};
   G.banner={t:'⚠ '+G.boss.name+' ⚠',s:mini?'Ein Monster mit Axt!':'Der Endgegner!',l:2.6,warn:true};
   SFX.roar();G.shake=10;
@@ -455,17 +455,33 @@ function updBoss(dt){
     const ty=clamp(P.y,B.r+30,H-B.r-20)+Math.sin(B.t*1.3)*30;
     B.y+=(ty-B.y)*dt*(B.st==='idle'?.9:.15);
     if(B.st==='idle'){B.ang+=(-2.1-B.ang)*Math.min(1,dt*5);B.atk-=dt;if(B.atk<=0)bossAttack(B,ph2)}
-    else if(B.st==='raise'){B.sT-=dt;B.ang+=(-1-B.ang)*Math.min(1,dt*7);if(B.sT<=0){B.st='chop';B.sT=.16}}
-    else if(B.st==='chop'){B.sT-=dt;B.ang+=(-3.75-B.ang)*Math.min(1,dt*22);if(B.sT<=0){bossSlam(B);B.st='recover';B.sT=.55}}
-    else if(B.st==='recover'){B.sT-=dt;if(B.sT<=0){if(B.combo>0){B.combo--;startRaise(B,true)}else{B.st='idle';B.atk=ph2?1:1.7}}}
+    else if(B.st==='raise'){B.sT-=dt;B.ang+=(-1-B.ang)*Math.min(1,dt*7);
+      if(!B.locked){B.zy=clamp(P.y,40,H-40);if(B.sT<=B.warnT){B.locked=true;SFX.warn()}}
+      if(B.sT<=0){B.st='chop';B.sT=.16}}
+    else if(B.st==='chop'){B.sT-=dt;B.ang+=(-3.75-B.ang)*Math.min(1,dt*22);if(B.sT<=0){bossSlam(B);B.st='recover';B.sT=B.mini?.55:.4}}
+    else if(B.st==='recover'){B.sT-=dt;if(B.sT<=0){if(B.combo>0){B.combo--;startRaise(B,true)}else{B.st='idle';B.atk=B.mini?(ph2?1:1.7):(ph2?.8:1.3)}}}
   }
 }
-function startRaise(B,fast){const ph2=B.hp<B.mhp*.5;B.st='raise';B.sT=(B.mini?(ph2?.6:.75):(ph2?.42:.55))*(fast?.85:1);B.zy=clamp(P.y,40,H-40);B.zh=B.mini?110:140;SFX.warn()}
+// The axe goes up first; the red band only appears (and the aim locks) for the last warnT seconds.
+function startRaise(B,fast){
+  const ph2=B.hp<B.mhp*.5,k=fast?.85:1;
+  B.st='raise';B.locked=false;B.zy=clamp(P.y,40,H-40);B.zh=B.mini?110:140;
+  B.sT=(B.mini?(ph2?.75:.9):(ph2?.65:.8))*k;
+  B.warnT=(B.mini?(ph2?.42:.5):(ph2?.26:.32))*k;
+}
 function bossAttack(B,ph2){
   const r=Math.random();
-  if(r<.55){B.combo=ph2&&!B.mini?1:0;startRaise(B)}
-  else if(r<.8){fan(B.x-B.r*.6,B.y-10*B.s,ph2?13:9,1.5,230,Math.PI);B.atk=1.3;setTimeout(()=>{if(G&&G.boss===B&&B.st==='idle')fan(B.x-B.r*.6,B.y-10*B.s,ph2?12:8,1.5,230,Math.PI)},350)}
-  else{const n=ri(6,10)+G.lvl;for(let i=0;i<n;i++)spawnE('swarm',B.x-30,B.y+rnd(-40,40),{vx:-rnd(140,220),amp:rnd(20,80)});burst(B.x-30,B.y,'#b7f',20,200,.5,3);B.atk=1.4}
+  const big=!B.mini,aim=()=>Math.atan2(P.y-B.y,P.x-(B.x-B.r*.6));
+  if(r<.55){B.combo=big?(ph2?2:1):0;startRaise(B)}
+  else if(r<.8){
+    // bullet fan aimed at the player; the final boss fires three volleys
+    const n=big?(ph2?15:11):(ph2?11:8),sp=big?270:230,vol=big?3:2;
+    for(let v=0;v<vol;v++)setTimeout(()=>{if(G&&G.boss===B&&B.st==='idle')fan(B.x-B.r*.6,B.y,n-(v%2),big?1.2:1.5,sp,aim())},v*320);
+    B.atk=big?1.5:1.3;
+  }
+  else{const n=ri(6,10)+G.lvl;for(let i=0;i<n;i++)spawnE('swarm',B.x-30,B.y+rnd(-40,40),{vx:-rnd(140,220),amp:rnd(20,80)});
+    if(big)for(let i=0;i<2+(ph2?2:0);i++)spawnE('kami',B.x-40,clamp(B.y+rnd(-120,120),40,H-40));
+    burst(B.x-30,B.y,'#b7f',20,200,.5,3);B.atk=1.4}
 }
 function bossSlam(B){
   waves.push({x:B.x-70*B.s,y:B.zy,h:B.zh,hitP:false});
@@ -817,7 +833,7 @@ function drawEnemies(){
 function drawBoss(){
   const B=G.boss;if(!B)return;
   // telegraph band
-  if(B.st==='raise'||B.st==='chop'){
+  if((B.st==='raise'&&B.locked)||B.st==='chop'){
     const y0=B.zy-B.zh/2,blink=Math.sin(G.time*30)>0;
     cx.fillStyle=`rgba(255,30,50,${blink?.28:.14})`;cx.fillRect(0,y0,B.x-40,B.zh);
     cx.strokeStyle='rgba(255,60,80,.9)';cx.lineWidth=3;cx.setLineDash([16,10]);cx.lineDashOffset=-G.time*80;
@@ -906,7 +922,7 @@ function drawLabels(){
   }
   cx.globalAlpha=1;
   const B=G.boss;
-  if(B&&(B.st==='raise'||B.st==='chop')){const blink=Math.sin(G.time*30)>0;for(let x=60;x<B.x-80;x+=170){const[sx_,sy_]=toS(x,B.zy);txt('!',sx_,sy_,40,blink?'#fff':'#f55','center')}}
+  if(B&&((B.st==='raise'&&B.locked)||B.st==='chop')){const blink=Math.sin(G.time*30)>0;for(let x=60;x<B.x-80;x+=170){const[sx_,sy_]=toS(x,B.zy);txt('!',sx_,sy_,40,blink?'#fff':'#f55','center')}}
   if(!P.dead){const n=wing.length+1,s=n>=MAXW+1?'MAX':String(n),[x,y]=toS(P.x+30,P.y);cx.fillStyle='rgba(0,20,10,.75)';const tw=12+s.length*10;rr(cx,x-tw/2,y-22,tw,20,10);cx.fill();cx.strokeStyle='#3dff9a';cx.lineWidth=2;cx.stroke();txt(s,x,y-12,15,'#bfffd6','center',false)}
 }
 function drawTexts(){for(const t of texts){cx.globalAlpha=Math.min(1,t.l/t.m*2);const sc=t.l>t.m-.12?1.3:1,[x,y]=toS(t.x,t.y);fitTxt(t.s,clamp(x,60,H-60),y,t.size*sc,t.c,H-20)}cx.globalAlpha=1}
