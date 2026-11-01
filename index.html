@@ -390,20 +390,23 @@ function spawnGates(p){
   const L=G.lvl,a=ri(3,6)+L*2+Math.floor(p*8);
   const mkG=()=>{const r=Math.random();
     if(r<.35)return{op:'add',v:a+ri(-2,4)};
-    if(r<.55)return{op:'mul',v:Math.random()<.75?2:3};
-    if(r<.82)return{op:'add',v:-ri(2,4+L*2)};
+    if(r<.46)return{op:'mul',v:Math.random()<.9?2:3};
+    if(r<.84)return{op:'add',v:-(ri(6,12)+L*3+Math.floor(p*12))};
     return{op:'add',v:ri(2,a)}};
   let g1=mkG(),g2=mkG();
   const good=g=>g.op==='mul'||g.v>0;
   if(!good(g1)&&!good(g2))g1={op:'add',v:a};
   gates.push({x:VW+40,used:false,sides:[g1,g2],hits:[0,0],flash:[0,0],sel:-1,fade:1});
 }
+const GATE_STEP=25;
+function gateStep(s){return s.op==='add'?GATE_STEP:GATE_STEP*24}
 function gateGood(s){return s.op==='mul'||s.v>0}
 function gateLabel(s){return s.op==='mul'?'×'+s.v:(s.v>=0?'+'+s.v:'−'+(-s.v))}
 function hitGate(g,side,d){
   const s=g.sides[side];g.hits[side]+=d;g.flash[side]=.08;SFX.gateHit();
-  if(s.op==='add'){while(g.hits[side]>=2.5){g.hits[side]-=2.5;s.v++}}
-  else{while(g.hits[side]>=60){g.hits[side]-=60;if(s.v<5)s.v++}}
+  // shooting raises a gate slowly: one step per GATE_STEP damage
+  const step=gateStep(s);
+  while(g.hits[side]>=step){g.hits[side]-=step;if(s.op==='add')s.v++;else if(s.v<3)s.v++}
 }
 function passGate(g){
   const side=P.y<H/2?0:1,s=g.sides[side];g.used=true;g.sel=side;
@@ -418,7 +421,7 @@ function passGate(g){
 
 /* ---------- boss ---------- */
 function spawnBoss(mini){
-  const L=G.lvl,hp=(mini?380:1100)*(1+.6*(L-1));
+  const L=G.lvl,hp=(mini?180:500)*(1+.5*(L-1));
   G.boss={mini,x:VW+160,y:H/2,tx:VW-(mini?200:250),hp,mhp:hp,t:0,st:'enter',sT:0,atk:2,ang:-2.1,fl:0,r:mini?52:72,s:mini?.75:1,zy:H/2,zh:130,combo:0,name:mini?'AXTWÜTERICH':'AXTKOLOSS'};
   G.banner={t:'⚠ '+G.boss.name+' ⚠',s:mini?'Ein Monster mit Axt!':'Der Endgegner!',l:2.6,warn:true};
   SFX.roar();G.shake=10;
@@ -640,7 +643,7 @@ function update(dt){
   }
   for(let i=wing.length-1;i>=0;i--){
     const w=wing[i];let hit=false;
-    query(w.x,w.y,6,e=>{damage(e,2.5);hit=true;return true});
+    query(w.x,w.y,6,e=>{damage(e,2.5);if(!(e.dead&&(e.type==='swarm'||e.type==='kami')&&Math.random()<.5))hit=true;return true});
     if(!hit&&B&&B.st!=='dying'&&(w.x-B.x)**2+(w.y-B.y)**2<(B.r+4)**2)hit=true;
     if(hit)killWing(i);
   }
@@ -852,7 +855,10 @@ function drawLabels(){
     for(let s=0;s<2;s++){
       cx.globalAlpha=clamp(g.fade,0,1)*(g.used&&g.sel!==s?.3:1);
       const sd=g.sides[s],[x,y]=toS(g.x,s?H*.75:H*.25);
-      txt(gateLabel(sd),x,y+Math.sin(bgT*4+s)*3,34,gateGood(sd)?'#bfffcf':'#ffc2c8','center');
+      const by=y+Math.sin(bgT*4+s)*3,good=gateGood(sd);
+      txt(gateLabel(sd),x,by,34,good?'#bfffcf':'#ffc2c8','center');
+      // progress towards the next step from shooting
+      if(!g.used&&!(sd.op==='mul'&&sd.v>=3)){const f=g.hits[s]/gateStep(sd);cx.fillStyle='rgba(0,0,0,.5)';rr(cx,x-30,by+22,60,7,3.5);cx.fill();cx.fillStyle=good?'#7fff9f':'#ff8a96';rr(cx,x-30,by+22,Math.max(7,60*f),7,3.5);cx.fill()}
     }
   }
   cx.globalAlpha=1;
@@ -1063,7 +1069,7 @@ addEventListener('resize',()=>{if(!$('win').classList.contains('hidden'))resizeF
 refreshMenu();
 
 /* test hooks */
-window.BS={get G(){return G},get P(){return P},get wing(){return wing},get enemies(){return enemies},update,startLevel,spawnBoss,addWing,showWin,winLevel};
+window.BS={get G(){return G},get P(){return P},get wing(){return wing},get enemies(){return enemies},get gates(){return gates},update,startLevel,spawnBoss,addWing,showWin,winLevel};
 </script>
 </body>
 </html>
