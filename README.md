@@ -40,7 +40,7 @@ Kisten erkennst du an Farbe und Zeichen:
 
 | Kiste | Wirkung |
 | --- | --- |
-| Gelb ▲ | Waffe eine Stufe stärker (bis Stufe 6) |
+| Gelb ▲ | Waffe eine Stufe stärker (bis Stufe 6; jede Stufe bringt etwas mehr, aber keine Wunder) |
 | Grün + | Mehr Team-Mitglieder |
 | Blau ◯ | Ein Schild zurück |
 | Buchstabe in Waffenfarbe | Neue Waffe: **B**laster, **S**treuschuss, **L**aser (durchschlägt Gegner), **R**aketen (suchen ihr Ziel, Flächenschaden), Bli**z** (springt von Gegner zu Gegner) |
@@ -62,7 +62,7 @@ Im Menü unter **Spielstände**:
 - **Laden:** holt einen gespeicherten Stand zurück, auf Wunsch wird das aktuelle Spiel vorher gespeichert. **✕** löscht einen Spielstand.
 - Ton, Musik und Steuerung bleiben dabei, wie du sie eingestellt hast.
 - Die Spielstände liegen im Browser des Handys. Löschst du die Browserdaten, sind sie weg.
-- Jedes Level ist länger und voller als das davor, die Gegner halten mehr aus.
+- Jedes Level ist länger und voller als das davor. Gegner halten pro Level 40 % mehr aus, Endgegner 60 % mehr.
 
 ## Technik
 

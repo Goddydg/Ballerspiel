@@ -389,7 +389,7 @@ const dmgMul=()=>1+.15*S.up.dmg, rateMul=()=>1+.08*S.up.rate;
 function startLevel(L){
   audio();
   G={mode:'play',lvl:L,t:0,time:0,len:55+Math.min(L,10)*4,kills:0,crys:0,maxTeam:0,combo:0,comboT:0,bestCombo:0,shake:0,
-     boss:null,bossSpawned:false,miniDone:false,nextGate:5,nextWave:1.2,carrierT:14,endT:0,hpMul:1+.3*(L-1),
+     boss:null,bossSpawned:false,miniDone:false,nextGate:5,nextWave:1.2,carrierT:14,endT:0,hpMul:1+.4*(L-1),
      banner:{t:'LEVEL '+L,s:sectorName(L),l:2.6}};
   P={x:130,y:H/2,hp:3+S.up.hp,maxHp:3+S.up.hp,inv:2,w:'blaster',wl:1+S.up.wpn,ft:0,dead:false};
   wing=[];bullets=[];ebul=[];enemies=[];loot=[];parts=[];gates=[];texts=[];bolts=[];rings=[];waves=[];beams=[];lanes=[];wells=[];
@@ -497,7 +497,7 @@ const BDEF={
 const bossKind=L=>BOSS_ORDER[(L-1)%BOSS_ORDER.length];
 function spawnBoss(mini,force){
   const L=G.lvl,kind=mini?'axe':(force||bossKind(L)),D=BDEF[kind];
-  const hp=(mini?150:1000*D.hp)*(1+.4*(L-1));
+  const hp=(mini?150:1000*D.hp)*(1+.6*(L-1));
   G.boss={mini,kind,x:VW+160,y:H/2,tx:VW-(mini?200:250),hp,mhp:hp,t:0,st:'enter',sT:0,atk:2,ang:-2.1,fl:0,r:mini?52:D.r,s:mini?.75:1,zy:H/2,zh:130,combo:0,
     name:mini?'AXTWÜTERICH':D.name,q:[],shield:0,fade:1,fadeT:1,guardT:0};
   G.banner={t:'⚠ '+G.boss.name+' ⚠',s:mini?'Ein Monster mit Axt!':D.sub,l:2.6,warn:true};
@@ -733,21 +733,21 @@ function firePlayer(dt){
   P.ft-=dt;if(P.ft>0||P.dead)return;
   const l=P.wl,dm=dmgMul(),rm=rateMul(),x=P.x+24,y=P.y,c=WPN[P.w].col;
   switch(P.w){
-    case'blaster':{P.ft=.11/rm;const n=Math.min(l,5);for(let i=0;i<n;i++)shoot(x,y+(i-(n-1)/2)*8,950,0,(1.1+(l>5?.4:0))*dm,{c,len:14});SFX.shot();break}
-    case'streu':{P.ft=.17/rm;const n=Math.min(3+2*(l-1),11),sp=.09+.02*Math.min(l,4);for(let i=0;i<n;i++){const a=(i-(n-1)/2)*sp;shoot(x,y,Math.cos(a)*800,Math.sin(a)*800,1.05*dm,{c,len:10,life:.9})}SFX.shot();break}
-    case'laser':{P.ft=.075/rm;shoot(x,y,1250,0,(.75+.3*l)*dm,{c,len:34,w:2+l*.6,pierce:2+l,hit:new Set(),laser:true});if(l>=4){shoot(x,y-10,1250,0,(.5+.2*l)*dm,{c,len:30,w:2,pierce:2,hit:new Set(),laser:true});shoot(x,y+10,1250,0,(.5+.2*l)*dm,{c,len:30,w:2,pierce:2,hit:new Set(),laser:true})}SFX.zap();break}
-    case'rakete':{P.ft=.38/rm;const n=Math.min(1+l,7);for(let i=0;i<n;i++){const a=(i-(n-1)/2)*.35;shoot(x-6,y,Math.cos(a)*320,Math.sin(a)*320,2.6*dm,{c,home:true,aoe:38+6*l,life:2.4,r:4,rocket:true})}SFX.rocket();break}
+    case'blaster':{P.ft=.11/rm;const n=[1,2,2,3,3,4][l-1];for(let i=0;i<n;i++)shoot(x,y+(i-(n-1)/2)*8,950,0,(1.1+.08*(l-1))*dm,{c,len:14});SFX.shot();break}
+    case'streu':{P.ft=.17/rm;const n=3+2*Math.floor((l-1)/2),sp=.1;for(let i=0;i<n;i++){const a=(i-(n-1)/2)*sp;shoot(x,y,Math.cos(a)*800,Math.sin(a)*800,(1+.06*(l-1))*dm,{c,len:10,life:.9})}SFX.shot();break}
+    case'laser':{P.ft=.075/rm;shoot(x,y,1250,0,(.7+.12*l)*dm,{c,len:34,w:2+l*.6,pierce:1+Math.ceil(l/2),hit:new Set(),laser:true});if(l>=5){shoot(x,y-10,1250,0,(.4+.06*l)*dm,{c,len:30,w:2,pierce:1,hit:new Set(),laser:true});shoot(x,y+10,1250,0,(.4+.06*l)*dm,{c,len:30,w:2,pierce:1,hit:new Set(),laser:true})}SFX.zap();break}
+    case'rakete':{P.ft=.38/rm;const n=1+Math.ceil(l/2);for(let i=0;i<n;i++){const a=(i-(n-1)/2)*.35;shoot(x-6,y,Math.cos(a)*320,Math.sin(a)*320,2.8*dm,{c,home:true,aoe:36+4*l,life:2.4,r:4,rocket:true})}SFX.rocket();break}
     case'blitz':{P.ft=.21/rm;fireBlitz(l,dm);SFX.zap();break}
   }
 }
 function fireBlitz(l,dm){
-  let x=P.x+22,y=P.y,range=430;const used=new Set(),pts=[[x,y]],n=2+l;
+  let x=P.x+22,y=P.y,range=430;const used=new Set(),pts=[[x,y]],n=2+Math.ceil(l/2);
   for(let j=0;j<n;j++){
     let best=null,bd=range*range;
     for(const e of enemies){if(e.dead||used.has(e)||e.x>VW+10)continue;const dx=e.x-x,dy=e.y-y;if(j===0&&dx<-20)continue;const d=dx*dx+dy*dy;if(d<bd){bd=d;best=e}}
     const B=G.boss;if(B&&!used.has(B)&&B.st!=='dying'&&B.st!=='enter'){const dx=B.x-x,dy=B.y-y,d=dx*dx+dy*dy-B.r*B.r;if(d<bd){bd=d;best=B}}
     if(!best)break;
-    used.add(best);pts.push([best.x,best.y]);damageAny(best,(1.6+.45*l)*dm);x=best.x;y=best.y;range=220;
+    used.add(best);pts.push([best.x,best.y]);damageAny(best,(1.5+.25*l)*dm*(best===G.boss?2:1));x=best.x;y=best.y;range=220;
   }
   if(pts.length===1)pts.push([x+120,y+rnd(-20,20)]);
   bolts.push({pts,l:.12});
@@ -863,7 +863,7 @@ function update(dt){
     if(b.dead)continue;
     if(B&&B.st!=='dying'&&B.st!=='enter'&&(b.x-B.x)**2+(b.y-B.y)**2<(B.r+b.r)**2){
       if(b.aoe)rocketBoom(b);else{hurtBoss(b.dmg);burst(b.x,b.y,b.c,2,100,.15,2)}
-      if(!b.laser){b.dead=true;continue}
+      b.dead=true;continue;
     }
     query(b.x,b.y,b.r,e=>{
       if(b.hit){if(b.hit.has(e))return;b.hit.add(e)}
