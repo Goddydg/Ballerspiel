@@ -73,6 +73,9 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 .card b{font-size:17px;color:var(--gold)}
 .card span{font-size:12px;color:#ffe9b0;font-weight:600}
 .card em{font-size:11px;color:#c9a96a;font-style:normal}
+.card.start{border-color:var(--neon);box-shadow:0 0 14px rgba(60,240,255,.45);background:linear-gradient(180deg,rgba(10,50,70,.92),rgba(5,20,35,.92))}
+.card.start b{color:#7ff}.card.start span{color:#d6fbff}.card.start em{color:#8cc}
+#nextBonus{color:#7ff;font-size:13px;font-weight:800;min-height:0}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 .ctrl{display:flex;flex-direction:column;align-items:center;gap:4px}
 .ctrl small{color:#9bd;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
@@ -96,6 +99,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
     <div id="lvTxt"></div>
     <button id="lvNext" aria-label="Level vor">›</button>
   </div>
+  <div id="nextBonus"></div>
   <button class="big" id="playBtn">▶ Los geht's</button>
   <div class="row">
     <button id="hangarBtn">Hangar <span class="cr" id="menuCr"></span></button>
@@ -183,7 +187,7 @@ function loadSlots(){try{return JSON.parse(localStorage.getItem(SLOT_KEY))||[]}c
 function saveSlots(a){try{localStorage.setItem(SLOT_KEY,JSON.stringify(a))}catch(e){}}
 const progress=()=>({crystals:S.crystals,level:S.level,maxLevel:S.maxLevel,up:Object.assign({},S.up)});
 function storeCurrent(){const a=loadSlots();a.unshift({date:Date.now(),p:progress()});while(a.length>SLOT_MAX)a.pop();saveSlots(a)}
-function applyProgress(p){S.crystals=p.crystals;S.level=p.level;S.maxLevel=p.maxLevel;S.up=Object.assign({dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},p.up);save()}
+function applyProgress(p){S.nextBonus=null;S.crystals=p.crystals;S.level=p.level;S.maxLevel=p.maxLevel;S.up=Object.assign({dmg:0,rate:0,wing:0,hp:0,mag:0,wpn:0},p.up);save()}
 function resetProgress(){applyProgress({crystals:0,level:1,maxLevel:1,up:{}})}
 
 const UPG=[
@@ -394,6 +398,8 @@ function startLevel(L){
   P={x:130,y:H/2,hp:3+S.up.hp,maxHp:3+S.up.hp,inv:2,w:'blaster',wl:1+S.up.wpn,ft:0,dead:false};
   wing=[];bullets=[];ebul=[];enemies=[];loot=[];parts=[];gates=[];texts=[];bolts=[];rings=[];waves=[];beams=[];lanes=[];wells=[];
   addWing(3+2*S.up.wing,true);
+  G.crysMul=1;const nb=S.nextBonus;
+  if(nb){applyBonus(nb);S.nextBonus=null;save();G.banner.s+=' · '+BONUS[nb.k].name+'!'}
   makeNebula(L);
   paused=false;drag=null;TILT.warned=false;tiltCalibrate();
   if(S.ctrl==='tilt')G.banner.s+=' · Neigen zum Steuern';
@@ -667,7 +673,7 @@ function dropCrate(x,y){
   loot.push({x,y,vx:rnd(-80,20),vy:rnd(-60,60),k:'crate',sub:k,w:sub,t:0});
 }
 function collect(o){
-  if(o.k==='cr'){G.crys++;SFX.crys();burst(o.x,o.y,'#7ff',4,80,.25,2);return}
+  if(o.k==='cr'){G.crys+=G.crysMul||1;SFX.crys();burst(o.x,o.y,'#7ff',4,80,.25,2);return}
   SFX.power();burst(o.x,o.y,'#ff0',24,220,.5,3);ring(o.x,o.y,50,'#ff8');
   if(o.sub==='weapon'){P.w=o.w;addText(P.x+50,P.y,WPN[o.w].name+'!',WPN[o.w].col,26,1.4)}
   else if(o.sub==='power'){if(P.wl<WMAX){P.wl++;addText(P.x+50,P.y,'Waffe Stufe '+P.wl+'!','#ff0',24,1.4)}else{G.crys+=5;addText(P.x+50,P.y,'Max! +5 ◆','#7ff',22)}}
@@ -1249,6 +1255,7 @@ function refreshMenu(){
   S.level=clamp(S.level,1,S.maxLevel);
   $('lvTxt').innerHTML=`<b>Level ${S.level}</b><small>${sectorName(S.level)}</small>`;
   $('lvPrev').disabled=S.level<=1;$('lvNext').disabled=S.level>=S.maxLevel;
+  $('nextBonus').textContent=S.nextBonus?'Startvorteil: '+BONUS[S.nextBonus.k].name+' – '+bonusDesc(S.nextBonus):'';
   $('menuCr').textContent='◆ '+S.crystals;
   refreshToggles();
 }
@@ -1274,12 +1281,34 @@ function buildHangar(){
 function openHangar(){buildHangar();showScreen('hangar')}
 
 /* ---------- level reward ---------- */
+// Chest content: permanent upgrade (choice), a start bonus for the next level (choice), or only crystals.
+const BONUS={
+  team:{name:'Verstärkung',desc:'+8 Begleiter beim Start'},
+  shield:{name:'Extra-Schild',desc:'+1 Schild über dem Maximum'},
+  wpn:{name:'Waffen-Boost',desc:'Waffe startet 2 Stufen stärker'},
+  gun:{name:'Spezialwaffe',desc:''},
+  cry:{name:'Kristallregen',desc:'Doppelte Kristalle im ganzen Level'},
+};
+const bonusDesc=b=>b.k==='gun'?'Start mit '+WPN[b.w].name+' (Stufe 2)':BONUS[b.k].desc;
+function applyBonus(b){
+  if(b.k==='team')addWing(8,true);
+  else if(b.k==='shield'){P.maxHp++;P.hp++}
+  else if(b.k==='wpn')P.wl=Math.min(WMAX,P.wl+2);
+  else if(b.k==='gun'){P.w=b.w;P.wl=Math.max(P.wl,2)}
+  else if(b.k==='cry')G.crysMul=2;
+}
+function rollChest(){
+  const canUp=UPG.some(u=>S.up[u.k]<u.max),r=Math.random();
+  if(r<.3)return Math.random()<.15?'jackpot':'cr';
+  if(r<.65||!canUp)return'start';
+  return'up';
+}
 const W={taps:0,open:false,shake:0,t:0,conf:[],bonus:0,picked:false};
 function showWin(){
   G.mode='over';
   const L=G.lvl;
   W.taps=0;W.open=false;W.shake=0;W.t=0;W.conf=[];W.picked=false;
-  W.bonus=15+L*10+Math.floor(G.kills/8);
+  W.bonus=15+L*10+Math.floor(G.kills/8);W.kind=rollChest();
   S.maxLevel=Math.max(S.maxLevel,L+1);S.level=L+1;bankCrystals();
   $('winTitle').textContent=`Level ${L} geschafft!`;
   $('winStats').innerHTML=statsHTML();
@@ -1295,16 +1324,34 @@ $('chest').addEventListener('pointerdown',e=>{
   W.taps++;W.shake=1;SFX.chestTap();
   const r=$('chest').getBoundingClientRect();for(let i=0;i<12;i++)confetti(r.left+r.width/2,r.top+r.height/2,rnd(-200,200),rnd(-300,-60));
   if(W.taps>=3){
-    W.open=true;SFX.chestOpen();S.crystals+=W.bonus;save();
-    $('chestHint').textContent=`+${W.bonus} ◆ Bonus-Kristalle!`;
-    for(let i=0;i<80;i++)confetti(r.left+r.width/2,r.top+r.height/2,rnd(-400,400),rnd(-600,-100));
-    setTimeout(showCards,700);
+    W.open=true;SFX.chestOpen();
+    const k=W.kind,mult=k==='jackpot'?4:k==='cr'?2:1,got=W.bonus*mult;S.crystals+=got;save();
+    $('chestHint').textContent=k==='jackpot'?`JACKPOT! +${got} ◆`:k==='cr'?`+${got} ◆ – die Truhe ist voller Kristalle!`:`+${got} ◆ Bonus-Kristalle!`;
+    for(let i=0;i<(k==='jackpot'?220:80);i++)confetti(r.left+r.width/2,r.top+r.height/2,rnd(-400,400),rnd(-600,-100));
+    setTimeout(k==='up'?showCards:k==='start'?showBonusCards:showNext,700);
   }else $('chestHint').textContent=['','Noch 2×!','Noch 1×!'][W.taps];
 });
+function showNext(){$('nextBtn').textContent=`Level ${S.level} ▶`;$('winBtns').classList.remove('hidden');setTimeout(()=>$('winBtns').scrollIntoView({behavior:'smooth',block:'end'}),50)}
+function showBonusCards(){
+  const ws=Object.keys(WPN).filter(w=>w!=='blaster');
+  const opts=Object.keys(BONUS).sort(()=>Math.random()-.5).slice(0,3).map(k=>({k,w:k==='gun'?pick(ws):undefined}));
+  const C=$('cards');C.innerHTML='';
+  const h=document.createElement('div');h.style.cssText='width:100%;font-weight:900;color:#fff';h.textContent='Wähle einen Startvorteil fürs nächste Level:';C.appendChild(h);
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='card start';b.style.animationDelay=i*.12+'s';
+    b.innerHTML=`<b>${BONUS[o.k].name}</b><span>${bonusDesc(o)}</span><em>nur nächstes Level</em>`;
+    b.onclick=()=>{if(W.picked)return;W.picked=true;S.nextBonus=o;save();SFX.power();
+      for(const x of C.querySelectorAll('.card'))if(x!==b)x.style.opacity=.25;b.style.transform='scale(1.08)';
+      const r=b.getBoundingClientRect();for(let k=0;k<40;k++)confetti(r.left+r.width/2,r.top+r.height/2,rnd(-300,300),rnd(-400,-50));
+      showNext()};
+    C.appendChild(b);
+  });
+  setTimeout(()=>C.scrollIntoView({behavior:'smooth',block:'end'}),400);
+}
 function showCards(){
   const opts=UPG.filter(u=>S.up[u.k]<u.max).sort(()=>Math.random()-.5).slice(0,3);
   const C=$('cards');C.innerHTML='';
-  if(!opts.length){$('winBtns').classList.remove('hidden');return}
+  if(!opts.length){showNext();return}
   const h=document.createElement('div');h.style.cssText='width:100%;font-weight:900;color:#fff';h.textContent='Wähle eine Belohnung:';C.appendChild(h);
   opts.forEach((u,i)=>{
     const b=document.createElement('button');b.className='card';b.style.animationDelay=i*.12+'s';

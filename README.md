@@ -49,7 +49,10 @@ Kristalle ◆ fliegen dir zu, wenn du nah genug bist. Beute ist eher selten: Kis
 
 ## Belohnung und Hangar
 
-- Am Levelende gibt es eine **Schatztruhe** (3× antippen) mit Bonus-Kristallen und danach **eine von drei Verbesserungen** gratis.
+- Am Levelende gibt es eine **Schatztruhe** (3× antippen). Was drin ist, ist jedes Mal eine Überraschung:
+  - **Nur Kristalle**, dafür doppelt so viele, selten sogar ein **Jackpot** mit vierfacher Menge.
+  - **Startvorteil** fürs nächste Level, eins von drei zur Wahl: Verstärkung (+8 Begleiter), Extra-Schild (+1 über dem Maximum), Waffen-Boost (+2 Stufen), Spezialwaffe (Start mit einer anderen Waffe auf Stufe 2) oder Kristallregen (doppelte Kristalle im ganzen Level). Der gewählte Vorteil steht im Menü und gilt nur für den nächsten Start.
+  - **Dauerhafte Verbesserung**, eine von drei zur Wahl (wie im Hangar, aber gratis).
 - Im **Hangar** kaufst du mit Kristallen dauerhafte Verbesserungen (jede Stufe wird deutlich teurer): Schaden, Feuerrate, Startteam, Schilde, Magnet und Start-Waffenstufe.
 - Kristalle behältst du auch, wenn du abgeschossen wirst. Der Fortschritt wird im Browser gespeichert.
 
