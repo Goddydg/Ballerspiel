@@ -346,7 +346,7 @@ const SFX={
   gateBad(){tone(400,.15,'sawtooth',.07,.6);tone(300,.2,'sawtooth',.06,.6,.12)},
   gateHit(){if(thr('gh',60))tone(1200,.03,'triangle',.02)},
   wingDie(){if(thr('wd',50))tone(600,.08,'square',.03,.4)},
-  hurt(){noise(.4,.35,1500);tone(220,.4,'sawtooth',.15,.3)},
+  hurt(){tone(70,.35,'sine',.5,.4);noise(.45,.45,2200);tone(220,.4,'sawtooth',.18,.3);tone(880,.09,'square',.09,1,.05);tone(660,.12,'square',.09,1,.17)},
   roar(){tone(70,1.3,'sawtooth',.22,.6);tone(104,1.2,'sawtooth',.14,.55);noise(1.1,.18,500)},
   warn(){tone(460,.12,'square',.06);tone(460,.12,'square',.06,1,.2)},
   slam(){noise(.7,.55,350);tone(48,.6,'sine',.5,.5)},
@@ -794,16 +794,20 @@ function iosTick(){
     const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.tabIndex=-1;hapticLabel.appendChild(i);document.body.appendChild(hapticLabel)}
   hapticLabel.click();
 }
+let hapticDue=0;
 function buzz(pattern){
   if(!S.vib)return;
   try{if(navigator.vibrate){navigator.vibrate(pattern);return}}catch(e){}
-  try{const n=Array.isArray(pattern)?Math.ceil(pattern.length/2):1;iosTick();for(let k=1;k<n;k++)setTimeout(iosTick,k*120)}catch(e){}
+  try{iosTick();hapticDue=performance.now()}catch(e){}
 }
+// iPhone Safari only allows the haptic during a real touch, so a pending hit is delivered on the next touch
+function flushHaptic(){if(hapticDue&&performance.now()-hapticDue<4000){hapticDue=0;try{iosTick()}catch(e){}}}
+for(const ev of['touchstart','touchend','pointerdown','pointerup'])document.addEventListener(ev,flushHaptic,{passive:true,capture:true});
 
 /* ---------- player ---------- */
 function hurtPlayer(){
   if(P.inv>0||P.dead||G.mode!=='play')return;
-  P.hp--;P.inv=1.6;G.shake=14;SFX.hurt();burst(P.x,P.y,'#f55',30,260,.6,3);buzz(P.hp<=0?[250,80,400]:160);
+  P.hp--;P.inv=1.6;G.shake=14;G.hurtT=.6;SFX.hurt();burst(P.x,P.y,'#f55',30,260,.6,3);buzz(P.hp<=0?[250,80,400]:160);
   if(P.hp<=0){
     P.dead=true;G.mode='dead';G.endT=2.4;SFX.bigboom();G.shake=24;
     burst(P.x,P.y,'#fff',60,400,1,4);burst(P.x,P.y,'#5cf',60,300,1.2,4);ring(P.x,P.y,200,'#fff',.6);
@@ -854,7 +858,7 @@ function update(dt){
   if(!G||G.mode==='menu')return;
   G.time+=dt;
   if(G.banner){G.banner.l-=dt;if(G.banner.l<=0)G.banner=null}
-  G.shake=Math.max(0,G.shake-dt*40);
+  G.shake=Math.max(0,G.shake-dt*40);if(G.hurtT>0)G.hurtT-=dt;
   if(G.comboT>0){G.comboT-=dt;if(G.comboT<=0)G.combo=0}
   if(G.mode==='play'){if(!G.boss)G.t+=dt;director(dt);controls(dt);firePlayer(dt);fireWing(dt)}
   if(G.mode==='won'){P.x+=(Math.min(P.x+400*dt,VW+200)-P.x)*(G.endT<1.6?1:0)}
@@ -1201,6 +1205,10 @@ function drawHUD(){
   txt(G.crys+' ◆',rx,46,18,'#7ff','right');
   // combo
   if(G.combo>=10){const sz=Math.min(40,18+G.combo/8);fitTxt(G.combo+'er KOMBO!',SW/2,SH-30,sz,G.combo>100?'#f6f':G.combo>50?'#fd4':'#fff',SW-20)}
+  // red edge flash when hit
+  if(G.hurtT>0){const a=Math.min(1,G.hurtT/.6),e=Math.min(SW,SH)*.22;
+    for(const[x0,y0,x1,y1,rx,ry,rw,rh]of[[0,0,0,e,0,0,SW,e],[0,SH,0,SH-e,0,SH-e,SW,e],[0,0,e,0,0,0,e,SH],[SW,0,SW-e,0,SW-e,0,e,SH]]){
+      const g=cx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,`rgba(255,20,40,${.75*a})`);g.addColorStop(1,'rgba(255,20,40,0)');cx.fillStyle=g;cx.fillRect(rx,ry,rw,rh)}}
   // banner
   if(G.banner){const b=G.banner,a=Math.min(1,b.l*2);cx.globalAlpha=a;fitTxt(b.t,SW/2,SH*.4,b.warn?42:52,b.warn?(Math.sin(G.time*16)>0?'#f44':'#ff0'):'#ffd34d',SW-24);if(b.s)fitTxt(b.s,SW/2,SH*.4+44,22,'#cdf',SW-24);cx.globalAlpha=1}
 }
