@@ -16,7 +16,7 @@ Im Menü wählst du unter **Steuerung** zwischen **Finger** und **Neigen**:
 - **Finger (Handy):** Finger irgendwo auf den Bildschirm legen und ziehen, am besten unterhalb des Schiffs. Das Schiff macht dieselbe Bewegung wie der Finger (etwas verstärkt), springt aber nicht zum Finger. So verdeckt der Finger nichts.
 - **PC:** Pfeiltasten oder WASD, alternativ mit der Maus ziehen. `P` oder `Esc` = Pause.
 - Geschossen wird automatisch.
-- **Treffer:** Wirst du getroffen, leuchtet der Bildschirmrand rot auf, es knallt und warnt. Dazu vibriert das Handy, beim Abschuss länger (an/aus mit dem Schalter „Vibration“ im Menü oder in der Pause). Android-Handys vibrieren sofort. Auf dem iPhone erlaubt Safari ein Tippen nur während einer Berührung; deshalb kommt es dort erst, wenn du den Bildschirm das nächste Mal berührst oder loslässt (ab iOS 18).
+- **Treffer:** Wirst du getroffen, leuchtet der Bildschirmrand rot auf, es knallt und warnt. Android-Handys vibrieren dazu, beim Abschuss länger (an/aus mit dem Schalter „Vibration“ im Menü oder in der Pause). Auf dem iPhone geht das nicht: Safari lässt Haptik nur beim direkten Antippen eines Schalters zu, nicht von selbst bei einem Treffer.
 
 ## So läuft ein Level
 
