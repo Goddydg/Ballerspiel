@@ -75,6 +75,9 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 .card em{font-size:11px;color:#c9a96a;font-style:normal}
 .card.start{border-color:var(--neon);box-shadow:0 0 14px rgba(60,240,255,.45);background:linear-gradient(180deg,rgba(10,50,70,.92),rgba(5,20,35,.92))}
 .card.start b{color:#7ff}.card.start span{color:#d6fbff}.card.start em{color:#8cc}
+.vib{display:inline-flex;align-items:center;gap:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;border:2px solid var(--neon);border-radius:10px;padding:8px 14px;min-height:44px;background:rgba(10,30,60,.8);box-shadow:0 0 10px rgba(60,240,255,.35);cursor:pointer}
+.vib input{width:44px;height:26px;accent-color:#3dff9a;margin:0}
+#hapticBox{position:fixed;left:0;bottom:0;width:2px;height:2px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}
 #nextBonus{color:#7ff;font-size:13px;font-weight:800;min-height:0}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 .ctrl{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -113,7 +116,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
   <div class="row">
     <button id="sndBtn"></button>
     <button id="musBtn"></button>
-    <button id="vibBtn"></button>
+    <label class="vib">Vibration <input type="checkbox" switch id="vibSw"></label>
   </div>
   <div class="help"><span id="helpCtrl"></span> Am PC: Pfeiltasten oder Maus ziehen. Geschossen wird automatisch.<br>Die Aliens kommen von oben. Flieg durch grüne Tore, damit dein Team wächst. Beschieß die Tore vorher, dann werden sie besser!</div>
   <div class="portrait-hint">Tipp: Handy hochkant halten, dann siehst du mehr.</div>
@@ -139,7 +142,7 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 <div id="pause" class="screen hidden">
   <h2>Pause</h2>
   <button class="big" id="resBtn">Weiter</button>
-  <div class="row"><button id="pSnd"></button><button id="pMus"></button><button id="pVib"></button></div>
+  <div class="row"><button id="pSnd"></button><button id="pMus"></button><label class="vib">Vibration <input type="checkbox" switch id="pVibSw"></label></div>
   <button id="calBtn">Neigen: neu ausrichten</button>
   <button id="quitBtn">Aufgeben</button>
 </div>
@@ -785,9 +788,10 @@ function query(x,y,r,cb){
 /* ---------- vibration ---------- */
 // Android: Vibration API. iPhone Safari has none; toggling a hidden <input switch> gives a short haptic tick on iOS 18+.
 let hapticLabel=null;
+// The switch must be rendered (tiny, nearly transparent) – a display:none switch gives no haptic.
 function iosTick(){
-  if(!hapticLabel){const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.id='hapticSw';i.style.display='none';
-    hapticLabel=document.createElement('label');hapticLabel.htmlFor='hapticSw';hapticLabel.style.display='none';document.body.append(i,hapticLabel)}
+  if(!hapticLabel){hapticLabel=document.createElement('label');hapticLabel.id='hapticBox';hapticLabel.setAttribute('aria-hidden','true');
+    const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.tabIndex=-1;hapticLabel.appendChild(i);document.body.appendChild(hapticLabel)}
   hapticLabel.click();
 }
 function buzz(pattern){
@@ -1255,7 +1259,7 @@ function refreshToggles(){
   refreshCtrl();
   for(const id of['sndBtn','pSnd'])$(id).textContent='Ton: '+(S.sound?'an':'aus');
   for(const id of['musBtn','pMus'])$(id).textContent='Musik: '+(S.music?'an':'aus');
-  for(const id of['vibBtn','pVib'])$(id).textContent='Vibration: '+(S.vib?'an':'aus');
+  for(const id of['vibSw','pVibSw'])$(id).checked=!!S.vib;
 }
 function refreshMenu(){
   S.level=clamp(S.level,1,S.maxLevel);
@@ -1454,8 +1458,8 @@ on('sndBtn',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('musBtn',()=>{S.music=!S.music;save();refreshToggles()});
 on('pSnd',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('pMus',()=>{S.music=!S.music;save();refreshToggles()});
-const togVib=()=>{S.vib=!S.vib;save();refreshToggles();if(S.vib)buzz(80)};
-on('vibBtn',togVib);on('pVib',togVib);
+// a real switch: tapping it gives the native iOS haptic, on Android we vibrate once as a test
+for(const id of['vibSw','pVibSw'])$(id).addEventListener('change',e=>{audio();S.vib=e.target.checked;save();refreshToggles();if(S.vib&&navigator.vibrate)buzz(80)});
 on('pauseBtn',()=>{if(G&&G.mode==='play'&&!paused)togglePause()});
 on('resBtn',togglePause);
 on('quitBtn',()=>{bankCrystals();toMenu()});
