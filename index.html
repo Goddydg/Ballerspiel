@@ -77,7 +77,6 @@ h2{font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(60,240,255,.6)}
 .card.start b{color:#7ff}.card.start span{color:#d6fbff}.card.start em{color:#8cc}
 .vib{display:inline-flex;align-items:center;gap:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;border:2px solid var(--neon);border-radius:10px;padding:8px 14px;min-height:44px;background:rgba(10,30,60,.8);box-shadow:0 0 10px rgba(60,240,255,.35);cursor:pointer}
 .vib input{width:44px;height:26px;accent-color:#3dff9a;margin:0}
-#hapticBox{position:fixed;left:0;bottom:0;width:2px;height:2px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}
 #nextBonus{color:#7ff;font-size:13px;font-weight:800;min-height:0}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 .ctrl{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -786,23 +785,12 @@ function query(x,y,r,cb){
 }
 
 /* ---------- vibration ---------- */
-// Android: Vibration API. iPhone Safari has none; toggling a hidden <input switch> gives a short haptic tick on iOS 18+.
-let hapticLabel=null;
-// The switch must be rendered (tiny, nearly transparent) – a display:none switch gives no haptic.
-function iosTick(){
-  if(!hapticLabel){hapticLabel=document.createElement('label');hapticLabel.id='hapticBox';hapticLabel.setAttribute('aria-hidden','true');
-    const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.tabIndex=-1;hapticLabel.appendChild(i);document.body.appendChild(hapticLabel)}
-  hapticLabel.click();
-}
-let hapticDue=0;
+// Android: Vibration API. iPhone Safari only gives haptics when the user taps a switch directly
+// (tested: programmatic toggles stay silent even during a touch), so hits there use the red flash and sound.
 function buzz(pattern){
   if(!S.vib)return;
-  try{if(navigator.vibrate){navigator.vibrate(pattern);return}}catch(e){}
-  try{iosTick();hapticDue=performance.now()}catch(e){}
+  try{if(navigator.vibrate)navigator.vibrate(pattern)}catch(e){}
 }
-// iPhone Safari only allows the haptic during a real touch, so a pending hit is delivered on the next touch
-function flushHaptic(){if(hapticDue&&performance.now()-hapticDue<4000){hapticDue=0;try{iosTick()}catch(e){}}}
-for(const ev of['touchstart','touchend','pointerdown','pointerup'])document.addEventListener(ev,flushHaptic,{passive:true,capture:true});
 
 /* ---------- player ---------- */
 function hurtPlayer(){
@@ -1466,7 +1454,7 @@ on('sndBtn',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('musBtn',()=>{S.music=!S.music;save();refreshToggles()});
 on('pSnd',()=>{S.sound=!S.sound;save();refreshToggles()});
 on('pMus',()=>{S.music=!S.music;save();refreshToggles()});
-// a real switch: tapping it gives the native iOS haptic, on Android we vibrate once as a test
+// a real switch: tapping it gives the native iOS haptic; on Android we vibrate once as a test
 for(const id of['vibSw','pVibSw'])$(id).addEventListener('change',e=>{audio();S.vib=e.target.checked;save();refreshToggles();if(S.vib&&navigator.vibrate)buzz(80)});
 on('pauseBtn',()=>{if(G&&G.mode==='play'&&!paused)togglePause()});
 on('resBtn',togglePause);
