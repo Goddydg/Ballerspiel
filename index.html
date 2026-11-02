@@ -504,15 +504,14 @@ const BOSS_ORDER=['axe','krake','queen','frost','grav'];
 const BDEF={
   axe:{name:'AXTKOLOSS',sub:'Weich der Axt aus!',r:72,hp:1},
   krake:{name:'LASERKRAKE',sub:'Achte auf die Laserstrahlen!',r:66,hp:.8},
-  queen:{name:'SCHWARMKÖNIGIN',sub:'Zerschieß die Eier – sonst heilen sie die Königin!',r:62,hp:.7},
+  queen:{name:'SCHWARMKÖNIGIN',sub:'Zerschieß die Eier – sonst heilen sie die Königin!',r:62,hp:1},
   frost:{name:'FROSTKOLOSS',sub:'Eis macht dich langsam!',r:70,hp:.75},
   grav:{name:'GRAVITRON',sub:'Lass dich nicht ins schwarze Loch ziehen!',r:60,hp:.7},
 };
 const bossKind=L=>BOSS_ORDER[(L-1)%BOSS_ORDER.length];
 function spawnBoss(mini,force){
   const L=G.lvl,kind=mini?'axe':(force||bossKind(L)),D=BDEF[kind];
-  const power=mini?1:dmgMul()*rateMul()*(1+.12*(P.wl-1));
-  const hp=(mini?150:1000*D.hp)*(1+.6*(L-1))*power;
+  const hp=(mini?150:1000*D.hp)*(1+.6*(L-1));
   G.boss={mini,kind,x:VW+160,y:H/2,tx:VW-(mini?200:250),hp,mhp:hp,t:0,st:'enter',sT:0,atk:2,ang:-2.1,fl:0,r:mini?52:D.r,s:mini?.75:1,zy:H/2,zh:130,combo:0,
     name:mini?'AXTWÜTERICH':D.name,first:!mini,q:[],shield:0,fade:1,fadeT:1,guardT:0};
   G.banner={t:'⚠ '+G.boss.name+' ⚠',s:mini?'Ein Monster mit Axt!':D.sub,l:2.6,warn:true};

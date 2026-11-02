@@ -65,7 +65,7 @@ Im Menü unter **Spielstände**:
 - **Laden:** holt einen gespeicherten Stand zurück, auf Wunsch wird das aktuelle Spiel vorher gespeichert. **✕** löscht einen Spielstand.
 - Ton, Musik und Steuerung bleiben dabei, wie du sie eingestellt hast.
 - Die Spielstände liegen im Browser des Handys. Löschst du die Browserdaten, sind sie weg.
-- Jedes Level ist länger und voller als das davor. Gegner halten pro Level 40 % mehr aus, Endgegner 60 % mehr. Endgegner passen sich außerdem deiner Ausrüstung an: Je mehr Schaden und Feuerrate du im Hangar gekauft hast und je höher deine Waffenstufe beim Boss ist, desto mehr hält er aus. Jeder Endgegner eröffnet mit seinem typischen Angriff.
+- Jedes Level ist länger und voller als das davor. Gegner halten pro Level 40 % mehr aus, Endgegner 60 % mehr. Jeder Endgegner eröffnet mit seinem typischen Angriff.
 
 ## Technik
 
