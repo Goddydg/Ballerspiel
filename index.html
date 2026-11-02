@@ -462,7 +462,7 @@ function spawnGates(p){
   const mkG=()=>{const r=Math.random();
     if(r<.35)return{op:'add',v:a+ri(-2,4)};
     if(r<.43)return wing.length<12?{op:'mul',v:2}:{op:'add',v:a+ri(-1,2)};
-    if(r<.84)return{op:'add',v:-(ri(6,12)+L*3+Math.floor(p*12))};
+    if(r<.84)return{op:'add',v:-(ri(3,6)+L+Math.floor(p*5))};
     return{op:'add',v:ri(2,a)}};
   let g1=mkG(),g2=mkG();
   const good=g=>g.op==='mul'||g.v>0;
