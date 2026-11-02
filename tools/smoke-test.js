@@ -14,7 +14,7 @@ const levels = (process.argv[2] || '1,3').split(',').map(Number);
     const r = await page.evaluate(L => {
       const B = window.BS; B.startLevel(L);
       let steps = 0;
-      while (steps < 60 * 400) {
+      while (steps < 60 * 700) {
         const G = B.G, P = B.P;
         if (G.mode !== 'play' && G.mode !== 'won') break;
         P.inv = 10;

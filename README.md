@@ -29,7 +29,7 @@ Im Menü wählst du unter **Steuerung** zwischen **Finger** und **Neigen**:
 | --- | --- | --- |
 | 1, 6, … | **Axtkoloss** | Hiebserien mit der Axt (rote Bahn), gezielte Kugelfächer, ruft Schwärmer und Kamikaze-Pfeile |
 | 2, 7, … | **Laserkrake** | Laservorhang: Mehrere Bahnen blinken pink, dann feuern die Laser – such die Lücke! Schießt Tintenkleckse, die dich verfolgen (abschießbar), und ruft Untertassen |
-| 3, 8, … | **Schwarmkönigin** | Von Leibwachen umkreist, die deine Schüsse abfangen. Legt Eier, aus denen nach ein paar Sekunden Schwärmer schlüpfen. Lässt Stacheln von oben regnen |
+| 3, 8, … | **Schwarmkönigin** | Von schießenden Leibwachen umkreist, die deine Schüsse abfangen. **Sturzflug:** Sie markiert deine Bahn gelb und stürzt dann samt Wachen herunter – raus aus der Bahn! Legt Eier: Schlüpfen sie, kommen Schwärmer und die Königin heilt sich. Stachelregen von oben, teils genau auf deine Bahn |
 | 4, 9, … | **Frostkoloss** | Eiszapfen fallen in markierten Bahnen (Dreiecke oben am Rand). Eiskugeln frieren dich ein, dann bist du kurz langsam. Eisschild: Solange er leuchtet, prallen deine Schüsse ab |
 | 5, 10, … | **Gravitron** | Erzeugt schwarze Löcher, die dich, dein Team und deine Schüsse anziehen – gegensteuern! Verschwindet, taucht woanders auf und feuert einen Kugelring. Spiralen aus Kugeln |
 - **Schilde:** Du hältst 3 Treffer aus (mit Verbesserungen mehr), nach einem Treffer bist du kurz unverwundbar.

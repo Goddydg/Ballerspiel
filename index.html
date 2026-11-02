@@ -504,7 +504,7 @@ const BOSS_ORDER=['axe','krake','queen','frost','grav'];
 const BDEF={
   axe:{name:'AXTKOLOSS',sub:'Weich der Axt aus!',r:72,hp:1},
   krake:{name:'LASERKRAKE',sub:'Achte auf die Laserstrahlen!',r:66,hp:.8},
-  queen:{name:'SCHWARMKÖNIGIN',sub:'Zerschieß die Eier, bevor sie schlüpfen!',r:62,hp:.65},
+  queen:{name:'SCHWARMKÖNIGIN',sub:'Zerschieß die Eier – sonst heilen sie die Königin!',r:62,hp:.7},
   frost:{name:'FROSTKOLOSS',sub:'Eis macht dich langsam!',r:70,hp:.75},
   grav:{name:'GRAVITRON',sub:'Lass dich nicht ins schwarze Loch ziehen!',r:60,hp:.7},
 };
@@ -530,7 +530,7 @@ function updBoss(dt){
   B.fade=clamp(B.fade+B.fadeT*dt*3,0,1);
   if(B.st==='enter'){B.x+=(B.tx-B.x)*Math.min(1,dt*1.5);if(Math.abs(B.x-B.tx)<6){B.st='idle';B.atk=1.2}}
   else if(B.kind!=='axe'){
-    if(B.kind!=='grav'){const ty=clamp(P.y,B.r+30,H-B.r-20)+Math.sin(B.t*1.1)*40;B.y+=(ty-B.y)*dt*(B.kind==='frost'?.4:.7)}
+    if(B.kind!=='grav'&&!B.dive){const ty=clamp(P.y,B.r+30,H-B.r-20)+Math.sin(B.t*1.1)*40;B.y+=(ty-B.y)*dt*(B.kind==='frost'?.4:.7)}
     bossTick(B,dt,ph2);
   }
   else{
@@ -594,6 +594,10 @@ function sched(B,d,f){B.q.push({t:B.t+d,f})}
 function bossTick(B,dt,ph2){
   for(let i=B.q.length-1;i>=0;i--)if(B.t>=B.q[i].t){const f=B.q[i].f;B.q.splice(i,1);f()}
   if(B.shield>0)B.shield-=dt;
+  if(B.dive){const d=B.dive;d.t+=dt;
+    if(d.ph==='warn'){B.y+=(d.y-B.y)*Math.min(1,dt*8);if(d.t>d.warn){d.ph='down';SFX.dash();SFX.roar()}}
+    else if(d.ph==='down'){B.x-=1350*dt;if(B.x<=80){B.x=80;d.ph='up';G.shake=14;SFX.slam();burst(B.x-40,B.y,'#fc4',30,300,.6,4)}}
+    else{B.x+=520*dt;if(B.x>=B.tx){B.x=B.tx;B.dive=null;B.st='idle'}}}
   if(B.kind==='queen'){B.guardT-=dt;if(B.guardT<=0){B.guardT=ph2?5:7;const want=ph2?8:6,have=enemies.filter(e=>e.boss===B&&!e.dead).length;
     for(let i=have;i<want;i++)spawnE('guard',B.x,B.y,{boss:B,a:i/want*TAU,R:105})}}
   if(B.st==='idle'){B.atk-=dt;if(B.atk<=0)BOSS_ATK[B.kind](B,ph2)}
@@ -614,8 +618,11 @@ const BOSS_ATK={
   },
   queen(B,ph2){
     const r=Math.random();
-    if(r<.45){const n=ph2?5:3;for(let i=0;i<n;i++)sched(B,i*.3,()=>{spawnE('egg',B.x-B.r*.5,clamp(B.y+rnd(-150,150),30,H-30),{hatch:3.2});SFX.pick()});busy(B,n*.3+.2,1.4)}
-    else if(r<.8){const n=ph2?20:14;for(let i=0;i<n;i++)sched(B,i*.09,()=>ebul.push({x:VW+10,y:rnd(15,H-15),vx:-300-rnd(0,80),vy:0,r:4,kind:'spike'}));busy(B,n*.09+.3,1.3)}
+    if(r<.3){const n=ph2?6:4;for(let i=0;i<n;i++)sched(B,i*.25,()=>{spawnE('egg',B.x-B.r*.5,clamp(B.y+rnd(-170,170),30,H-30),{hatch:ph2?2.4:3});SFX.pick()});busy(B,n*.25+.2,1.1)}
+    else if(r<.55){ // spike rain, a third of it aimed at the player's lane
+      const n=ph2?26:18;for(let i=0;i<n;i++)sched(B,i*.08,()=>ebul.push({x:VW+10,y:i%3?rnd(15,H-15):clamp(P.y+rnd(-30,30),15,H-15),vx:-320-rnd(0,90),vy:0,r:4,kind:'spike'}));busy(B,n*.08+.3,1.1)}
+    else if(r<.85){ // dive: mark the player's lane, then crash down it with the guards
+      B.dive={ph:'warn',t:0,y:clamp(P.y,B.r+10,H-B.r-10),warn:ph2?.55:.75};SFX.warn();busy(B,6,ph2?.6:1)}
     else{const n=8+G.lvl;for(let i=0;i<n;i++)spawnE('swarm',B.x-30,B.y+rnd(-50,50),{vx:-rnd(150,230),amp:rnd(20,80)});burst(B.x-30,B.y,'#fc4',20,200,.5,3);B.atk=1.5}
   },
   frost(B,ph2){
@@ -656,6 +663,11 @@ function updHazards(dt){
   wells=wells.filter(w=>w.t<w.grow+w.life);
 }
 function drawHazards(){
+  const Q=G.boss;
+  if(Q&&Q.dive&&Q.dive.ph==='warn'){const d=Q.dive,bl=Math.sin(G.time*30)>0,w=Q.r*2;
+    cx.fillStyle=`rgba(255,200,40,${bl?.25:.1})`;cx.fillRect(0,d.y-w/2,Q.x,w);
+    cx.strokeStyle='rgba(255,210,60,.9)';cx.lineWidth=3;cx.setLineDash([14,10]);cx.lineDashOffset=G.time*80;
+    cx.beginPath();cx.moveTo(0,d.y-w/2);cx.lineTo(Q.x,d.y-w/2);cx.moveTo(0,d.y+w/2);cx.lineTo(Q.x,d.y+w/2);cx.stroke();cx.setLineDash([])}
   for(const b of beams){
     if(b.warn>0){const bl=Math.sin(G.time*40)>0;cx.fillStyle=`rgba(255,60,220,${bl?.16:.07})`;cx.fillRect(0,b.y-b.w/2,b.x0,b.w);
       cx.strokeStyle=`rgba(255,120,240,${bl?.9:.4})`;cx.lineWidth=2;cx.beginPath();cx.moveTo(0,b.y);cx.lineTo(b.x0,b.y);cx.stroke();continue}
@@ -729,10 +741,13 @@ function updEnemies(dt){
         e.x+=e.vx*dt;e.ft-=dt;if(e.ft<=0){fan(e.x-26,e.y,3,.5,190*bs,Math.atan2(P.y-e.y,P.x-e.x));e.ft=3}
         break;
       case'guard':{const B=e.boss;if(!B||G.boss!==B||B.st==='dying'){kill(e,true);break}
-        e.a+=(B.hp<B.mhp*.5?2.2:1.5)*dt;e.x=B.x+Math.cos(e.a)*e.R;e.y=B.y+Math.sin(e.a)*e.R;break}
+        const ph2=B.hp<B.mhp*.5;e.a+=(ph2?2.2:1.5)*dt;e.x=B.x+Math.cos(e.a)*e.R;e.y=B.y+Math.sin(e.a)*e.R;
+        e.ft-=dt;if(e.ft<=0&&!B.dive){e.ft=ph2?rnd(1.8,2.8):rnd(3,4.5);const a=Math.atan2(P.y-e.y,P.x-e.x);ebul.push({x:e.x,y:e.y,vx:Math.cos(a)*230,vy:Math.sin(a)*230,r:4,kind:'spike'})}
+        break}
       case'egg':
         e.x+=e.vx*dt;
-        if(e.t>e.hatch){e.dead=true;e.gone=true;for(let i=0;i<4;i++)spawnE('swarm',e.x,clamp(e.y+rnd(-16,16),10,H-10),{amp:rnd(10,40)});burst(e.x,e.y,'#9f6',14,160,.4,3);SFX.boom()}
+        if(e.t>e.hatch){e.dead=true;e.gone=true;for(let i=0;i<4;i++)spawnE('swarm',e.x,clamp(e.y+rnd(-16,16),10,H-10),{amp:rnd(10,40)});burst(e.x,e.y,'#9f6',14,160,.4,3);SFX.boom();
+          const Q=G.boss;if(Q&&Q.kind==='queen'&&Q.st!=='dying'&&(Q.healed||0)<Q.mhp*.3){const h=Q.mhp*.02;Q.healed=(Q.healed||0)+h;Q.hp=Math.min(Q.mhp,Q.hp+h);burst(Q.x,Q.y,'#7f7',20,160,.5,3);addText(Q.x-90,Q.y,'Königin heilt sich!','#7f7',18,1.2)}}
         break;
       case'ink':{const a=Math.atan2(e.vy,e.vx),ta=Math.atan2(P.y-e.y,P.x-e.x);let da=ta-a;while(da>Math.PI)da-=TAU;while(da<-Math.PI)da+=TAU;
         const na=a+clamp(da,-1.8*dt,1.8*dt);e.vx=Math.cos(na)*150;e.vy=Math.sin(na)*150;e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.t>7)e.dead=true,e.gone=true;break}
