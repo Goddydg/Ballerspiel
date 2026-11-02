@@ -386,8 +386,8 @@ const ET={
   kami:{hp:2,r:10,spd:120,cr:.18,crn:1,crate:.006},
   tank:{hp:45,r:30,spd:35,cr:1,crn:4,crate:.35},
   carrier:{hp:10,r:17,spd:150,cr:1,crn:3,crate:1},
-  guard:{hp:6,r:13,spd:0,cr:.25,crn:1,crate:0},
-  egg:{hp:5,r:12,spd:40,cr:.15,crn:1,crate:0},
+  guard:{hp:22,r:13,spd:0,cr:.25,crn:1,crate:0},
+  egg:{hp:18,r:12,spd:40,cr:.15,crn:1,crate:0},
   ink:{hp:3,r:11,spd:0,cr:.1,crn:1,crate:0},
 };
 const dmgMul=()=>1+.15*S.up.dmg, rateMul=()=>1+.08*S.up.rate;
@@ -1030,7 +1030,7 @@ function drawEnemies(){
     if(e.type==='kami'&&e.st===2){cx.save();cx.translate(e.x,e.y);cx.rotate(Math.atan2(e.vy,e.vx)+Math.PI);spr(im,0,0);cx.restore()}
     else if(e.type==='egg'){const j=e.t>e.hatch-.9?rnd(-2,2):0,sc=1+Math.sin(e.t*6)*.06;spr(im,e.x+j,e.y+j,sc)}
     else spr(im,e.x,e.y+(e.type==='swarm'?Math.sin(e.t*12+e.ph)*1.2:0));
-    if(e.r>15&&e.hp<e.mhp){const w=e.r*1.6;cx.fillStyle='#300';cx.fillRect(e.x+e.r+5,e.y-w/2,4,w);cx.fillStyle='#f44';cx.fillRect(e.x+e.r+5,e.y-w/2,4,w*e.hp/e.mhp)}
+    if((e.r>15||e.type==='guard'||e.type==='egg')&&e.hp<e.mhp){const w=e.r*1.6;cx.fillStyle='#300';cx.fillRect(e.x+e.r+5,e.y-w/2,4,w);cx.fillStyle='#f44';cx.fillRect(e.x+e.r+5,e.y-w/2,4,w*e.hp/e.mhp)}
   }
 }
 function drawBoss(){
