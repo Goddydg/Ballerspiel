@@ -471,7 +471,9 @@ function spawnGates(p){
   if(!good(g1)&&!good(g2))g1={op:'add',v:a};
   // narrow gates at random spots, one in each half; flying past both gives nothing
   const w=clamp(140-L*6,90,140);
-  g1.w=g2.w=w;g1.c=rnd(w/2+8,H/2-w/2-14);g2.c=rnd(H/2+w/2+14,H-w/2-8);
+  // red (minus) gates are wide, so a clumsy move can catch one; green ones stay narrow
+  g1.w=gateGood(g1)?w:236;g2.w=gateGood(g2)?w:236;
+  g1.c=rnd(g1.w/2+8,H/2-g1.w/2-14);g2.c=rnd(H/2+g2.w/2+14,H-g2.w/2-8);
   gates.push({x:VW+40,used:false,sides:[g1,g2],hits:[0,0],flash:[0,0],sel:-1,fade:1});
 }
 const GATE_STEP=40;
