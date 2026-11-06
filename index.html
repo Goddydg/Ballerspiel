@@ -398,7 +398,7 @@ function startLevel(L){
      boss:null,bossSpawned:false,miniDone:false,nextGate:5,nextWave:1.2,carrierT:14,endT:0,hpMul:1+.4*(L-1),
      banner:{t:'LEVEL '+L,s:sectorName(L),l:2.6}};
   P={x:130,y:H/2,hp:3+S.up.hp,maxHp:3+S.up.hp,inv:2,w:'blaster',wl:1+S.up.wpn,ft:0,dead:false};
-  wing=[];bullets=[];ebul=[];enemies=[];loot=[];parts=[];gates=[];texts=[];bolts=[];rings=[];waves=[];beams=[];lanes=[];wells=[];
+  wing=[];bullets=[];ebul=[];enemies=[];loot=[];parts=[];gates=[];texts=[];bolts=[];rings=[];waves=[];beams=[];lanes=[];wells=[];corridors=[];ringwaves=[];strikes=[];swalls=[];
   addWing(3+2*S.up.wing,true);
   G.crysMul=1;const nb=S.nextBonus;
   if(nb){applyBonus(nb);S.nextBonus=null;save();G.banner.s+=' · '+BONUS[nb.k].name+'!'}
@@ -500,13 +500,15 @@ function passGate(g){
 
 /* ---------- boss ---------- */
 // Final bosses rotate per level; the mid-level boss is always the axe one.
-const BOSS_ORDER=['axe','krake','queen','frost','grav'];
+const BOSS_ORDER=['axe','krake','queen','frost','grav','qualle','wurm'];
 const BDEF={
   axe:{name:'AXTKOLOSS',sub:'Weich der Axt aus!',r:72,hp:1},
   krake:{name:'LASERKRAKE',sub:'Achte auf die Laserstrahlen!',r:66,hp:.8},
   queen:{name:'SCHWARMKÖNIGIN',sub:'Zerschieß die Eier – sonst heilen sie die Königin!',r:62,hp:.5},
   frost:{name:'FROSTKOLOSS',sub:'Eis macht dich langsam!',r:70,hp:.75},
   grav:{name:'GRAVITRON',sub:'Lass dich nicht ins schwarze Loch ziehen!',r:60,hp:.7},
+  qualle:{name:'STROMQUALLE',sub:'Bleib im Gang – der Rand steht unter Strom!',r:66,hp:.75},
+  wurm:{name:'PLASMAWURM',sub:'Find die Lücke in den Wellenwänden!',r:64,hp:.8},
 };
 const bossKind=L=>BOSS_ORDER[(L-1)%BOSS_ORDER.length];
 function spawnBoss(mini,force){
@@ -575,7 +577,7 @@ function hurtBoss(d){
   if(B.shield>0){if(Math.random()<.3)burst(B.x-B.r*.8,B.y+rnd(-50,50),'#cff',3,140,.2,2);return}
   if(B.fade<.5)return;
   B.hp-=d;if(B.fl<-.15)B.fl=.04;
-  if(B.hp<=0){B.hp=0;B.st='dying';B.sT=1.6;B.shield=0;B.fade=1;B.fadeT=1;SFX.roar();ebul=[];waves=[];beams=[];lanes=[];wells=[]}
+  if(B.hp<=0){B.hp=0;B.st='dying';B.sT=1.6;B.shield=0;B.fade=1;B.fadeT=1;SFX.roar();ebul=[];waves=[];beams=[];lanes=[];wells=[];corridors=[];ringwaves=[];strikes=[];swalls=[]}
 }
 function finishBoss(){
   const B=G.boss;G.boss=null;G.kills+=1;G.shake=22;
@@ -590,6 +592,10 @@ function finishBoss(){
 
 /* ---------- final boss abilities ---------- */
 let beams=[],lanes=[],wells=[];
+// hot wire field with a winding safe corridor, rings with a gap, marked lightning strikes, wavy plasma walls with a gap
+let corridors=[],ringwaves=[],strikes=[],swalls=[];
+const corC=(c,x)=>clamp(H/2+c.A*Math.sin(c.k*x+c.ph)+c.A2*Math.sin(c.k2*x+c.ph2),c.w/2+12,H-c.w/2-12);
+const angD=(a,b)=>{let d=a-b;while(d>Math.PI)d-=TAU;while(d<-Math.PI)d+=TAU;return d};
 function sched(B,d,f){B.q.push({t:B.t+d,f})}
 function bossTick(B,dt,ph2){
   for(let i=B.q.length-1;i>=0;i--)if(B.t>=B.q[i].t){const f=B.q[i].f;B.q.splice(i,1);f()}
@@ -640,8 +646,60 @@ const BOSS_ATK={
       busy(B,1.3,1);
     }else{const dur=2.2,arms=ph2?3:2;let k=0;for(let t=0;t<dur;t+=.09){const a0=k++*.33;sched(B,t,()=>{for(let j=0;j<arms;j++){const a=a0+j*TAU/arms;ebul.push({x:B.x,y:B.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,r:5,kind:'orb'})}})}busy(B,dur+.2,1.2)}
   },
+  qualle(B,ph2,f){
+    const r=f??Math.random();
+    if(r<.4&&!corridors.length){ // hot wire: the field fills the screen except one winding corridor
+      const len=ph2?1100:850,sp=ph2?230:200;
+      corridors.push({front:VW+10,len,w:ph2?95:115,speed:sp,A:rnd(110,150),k:rnd(.006,.009),ph:rnd(0,TAU),A2:rnd(20,45),k2:rnd(.015,.022),ph2:rnd(0,TAU)});
+      SFX.warn();busy(B,(VW+len)/sp-2,.8);
+    }else if(r<.7){const n=ph2?3:2;
+      for(let i=0;i<n;i++)sched(B,i*.9,()=>{const d=Math.hypot(P.x-B.x,P.y-B.y)||1;ringwaves.push({x:B.x,y:B.y,r:B.r,speed:230,th:16,gapA:Math.atan2(P.y-B.y,P.x-B.x)+rnd(-.5,.5),gapW:ph2?115/d:135/d,hitP:false});SFX.zap()});
+      busy(B,n*.9+.5,1)}
+    else{const n=ph2?7:5;for(let i=0;i<n;i++)strikes.push({x:i?rnd(60,VW*.6):P.x,y:i?rnd(30,H-30):P.y,r:48,t:0,warn:ph2?.6:.8,done:false});SFX.warn();busy(B,1.2,1)}
+  },
+  wurm(B,ph2,f){
+    const r=f??Math.random();
+    if(r<.45){const n=ph2?4:3,gap=ph2?1.1:1.4;
+      for(let i=0;i<n;i++)sched(B,i*gap,()=>{swalls.push({front:VW+40,th:22,A:rnd(40,80),k:rnd(.012,.02),ph:rnd(0,TAU),gap:rnd(70,H-70),gw:ph2?95:115,speed:ph2?280:240,hitP:false});SFX.warn()});
+      busy(B,n*gap+.5,1)}
+    else if(r<.75){const n=ph2?4:3;
+      for(let i=0;i<n;i++)sched(B,i*.35,()=>{const a=Math.atan2(P.y-B.y,P.x-B.x)+rnd(-.3,.3);ebul.push({x:B.x-B.r*.6,y:B.y,vx:Math.cos(a)*200,vy:Math.sin(a)*200,r:9,kind:'fire',split:rnd(.9,1.4),t:0});SFX.rocket()});
+      busy(B,n*.35+.3,1.1)}
+    else{const n=6+G.lvl;for(let i=0;i<n;i++)spawnE('drone',B.x-20-i*30,B.y,{amp:rnd(90,150),ph:-i*.45});B.atk=1.3}
+  },
 };
 function updHazards(dt){
+  for(const c of corridors){
+    c.front-=c.speed*dt;
+    const out=(x,y,m)=>x>=c.front&&x<=c.front+c.len&&Math.abs(y-corC(c,x))>c.w/2-m;
+    if(!P.dead&&out(P.x,P.y,8))hurtPlayer();
+    for(let i=wing.length-1;i>=0;i--)if(out(wing[i].x,wing[i].y,2))killWing(i);
+    if(Math.random()<.8){const x=rnd(Math.max(0,c.front),Math.min(VW,c.front+c.len)),cc=corC(c,x),up=Math.random()<.5;
+      parts.push({x,y:up?cc-c.w/2:cc+c.w/2,vx:rnd(-40,40),vy:(up?-1:1)*rnd(20,80),l:.3,m:.3,c:'#ff8',s:2.5})}
+  }
+  corridors=corridors.filter(c=>c.front+c.len>-20);
+  for(const w of ringwaves){
+    w.r+=w.speed*dt;
+    const hit=(x,y,m)=>{const d=Math.hypot(x-w.x,y-w.y);return Math.abs(d-w.r)<w.th/2+m&&Math.abs(angD(Math.atan2(y-w.y,x-w.x),w.gapA))>w.gapW/2};
+    if(!w.hitP&&!P.dead&&hit(P.x,P.y,7)){w.hitP=true;hurtPlayer()}
+    for(let i=wing.length-1;i>=0;i--)if(hit(wing[i].x,wing[i].y,3))killWing(i);
+  }
+  ringwaves=ringwaves.filter(w=>w.r<1500);
+  for(const k of strikes){
+    k.t+=dt;if(k.done||k.t<k.warn)continue;
+    k.done=true;SFX.zap();G.shake=Math.max(G.shake,6);
+    bolts.push({pts:[[VW+20,k.y+rnd(-30,30)],[k.x+140,k.y+rnd(-40,40)],[k.x+50,k.y+rnd(-20,20)],[k.x,k.y]],l:.2});burst(k.x,k.y,'#ff8',20,220,.4,3);
+    if(!P.dead&&(P.x-k.x)**2+(P.y-k.y)**2<(k.r+6)**2)hurtPlayer();
+    for(let i=wing.length-1;i>=0;i--)if((wing[i].x-k.x)**2+(wing[i].y-k.y)**2<k.r*k.r)killWing(i);
+  }
+  strikes=strikes.filter(k=>k.t<k.warn+.25);
+  for(const w of swalls){
+    w.front-=w.speed*dt;
+    const hit=(x,y,m)=>Math.abs(x-(w.front+w.A*Math.sin(w.k*y+w.ph)))<w.th/2+m&&Math.abs(y-w.gap)>w.gw/2;
+    if(!w.hitP&&!P.dead&&hit(P.x,P.y,7)){w.hitP=true;hurtPlayer()}
+    for(let i=wing.length-1;i>=0;i--)if(hit(wing[i].x,wing[i].y,3))killWing(i);
+  }
+  swalls=swalls.filter(w=>w.front+w.A>-40);
   for(const b of beams){
     if(b.warn>0){b.warn-=dt;if(b.warn<=0){SFX.zap();G.shake=Math.max(G.shake,5)}continue}
     b.on-=dt;const inL=(x,y)=>Math.abs(y-b.y)<b.w/2&&x<b.x0;
@@ -663,6 +721,30 @@ function updHazards(dt){
   wells=wells.filter(w=>w.t<w.grow+w.life);
 }
 function drawHazards(){
+  for(const c of corridors){
+    const x0=Math.max(0,c.front),x1=Math.min(VW,c.front+c.len);if(x1<=x0)continue;
+    const f=.55+.25*Math.sin(G.time*25);
+    cx.fillStyle=`rgba(255,225,70,${.34*f})`;
+    for(let x=x0;x<x1;x+=8){const cc=corC(c,x);cx.fillRect(x,0,8.5,cc-c.w/2);cx.fillRect(x,cc+c.w/2,8.5,H-cc-c.w/2)}
+    cx.strokeStyle=`rgba(255,255,190,${.95*f})`;cx.lineWidth=3;
+    for(const sg of[-1,1]){cx.beginPath();for(let x=x0;x<=x1;x+=8){const y=corC(c,x)+sg*c.w/2+rnd(-2,2);x===x0?cx.moveTo(x,y):cx.lineTo(x,y)}cx.stroke()}
+    if(c.front>0){const cc=corC(c,c.front);cx.fillStyle='rgba(255,255,210,.8)';cx.fillRect(c.front-2,0,4,cc-c.w/2);cx.fillRect(c.front-2,cc+c.w/2,4,H-cc-c.w/2)}
+  }
+  for(const w of ringwaves){
+    cx.lineCap='butt';cx.strokeStyle='rgba(120,230,255,.45)';cx.lineWidth=w.th+10;cx.beginPath();cx.arc(w.x,w.y,w.r,w.gapA+w.gapW/2,w.gapA-w.gapW/2+TAU);cx.stroke();
+    cx.strokeStyle='#eff';cx.lineWidth=w.th*.4;cx.stroke();
+  }
+  for(const k of strikes){
+    if(!k.done){const p=k.t/k.warn,bl=Math.sin(G.time*30)>0;cx.strokeStyle=`rgba(255,240,90,${bl?.95:.5})`;cx.lineWidth=3;
+      cx.beginPath();cx.arc(k.x,k.y,k.r,0,TAU);cx.stroke();cx.fillStyle=`rgba(255,240,90,${.12+.25*p})`;cx.beginPath();cx.arc(k.x,k.y,k.r*p,0,TAU);cx.fill()}
+    else{cx.fillStyle='rgba(255,255,220,.7)';cx.beginPath();cx.arc(k.x,k.y,k.r,0,TAU);cx.fill()}
+  }
+  for(const w of swalls){
+    for(const[col,lw]of[['rgba(255,110,30,.55)',w.th+8],['#ffd8a0',w.th*.45]]){
+      cx.strokeStyle=col;cx.lineWidth=lw;cx.lineCap='round';cx.beginPath();let pen=false;
+      for(let y=0;y<=H;y+=6){const x=w.front+w.A*Math.sin(w.k*y+w.ph);if(Math.abs(y-w.gap)<=w.gw/2){pen=false;continue}pen?cx.lineTo(x,y):cx.moveTo(x,y);pen=true}
+      cx.stroke()}
+  }
   const Q=G.boss;
   if(Q&&Q.dive&&Q.dive.ph==='warn'){const d=Q.dive,bl=Math.sin(G.time*30)>0,w=Q.r*2;
     cx.fillStyle=`rgba(255,200,40,${bl?.25:.1})`;cx.fillRect(0,d.y-w/2,Q.x,w);
@@ -910,6 +992,7 @@ function update(dt){
   // enemy bullets
   for(const b of ebul){
     if(b.dead)continue;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    if(b.split){b.t+=dt;if(b.t>b.split){b.dead=true;burst(b.x,b.y,'#f80',12,160,.3,3);for(let i=0;i<6;i++){const a=i/6*TAU+Math.random();ebul.push({x:b.x,y:b.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,r:4,kind:'fire'})}continue}}
     if(b.x<-20||b.x>VW+20||b.y<-20||b.y>H+20){b.dead=true;continue}
     if(!P.dead&&(b.x-P.x)**2+(b.y-P.y)**2<(b.r+7)**2){b.dead=true;if(b.kind==='ice'){if(!(P.slow>0))addText(P.x+40,P.y,'Eingefroren!','#9ff',20);P.slow=2.2;burst(P.x,P.y,'#cff',16,160,.4,3)}else hurtPlayer();continue}
     for(let i=wing.length-1;i>=0;i--){const w=wing[i];if((b.x-w.x)**2+(b.y-w.y)**2<(b.r+5)**2){killWing(i);b.dead=true;break}}
@@ -1126,6 +1209,29 @@ const BOSS_DRAW={
     cx.fillStyle=eg;cx.beginPath();cx.arc(lx,ly,24,0,TAU);cx.fill();cx.fillStyle='#000';cx.beginPath();cx.arc(lx,ly,7,0,TAU);cx.fill();
     ring(98,26,B.t*.8+Math.PI,'rgba(176,124,255,.35)',3);
   },
+  qualle(B,fl,rage){
+    cx.lineCap='round';
+    for(let i=0;i<7;i++){const bx=-54+i*18;cx.strokeStyle=fl?'#fff':'rgba(130,220,255,.75)';cx.lineWidth=5;cx.beginPath();cx.moveTo(bx,18);
+      for(let k=1;k<=6;k++)cx.lineTo(bx+Math.sin(B.t*3+i+k*.8)*10,18+k*18);cx.stroke();
+      if(Math.random()<.35){cx.strokeStyle='#ff8';cx.lineWidth=2;cx.beginPath();cx.moveTo(bx,40);cx.lineTo(bx+rnd(-12,12),72);cx.lineTo(bx+rnd(-12,12),104);cx.stroke()}}
+    const g=cx.createRadialGradient(-20,-40,8,0,-10,92);g.addColorStop(0,fl?'#fff':'rgba(255,200,255,.97)');g.addColorStop(.6,fl?'#eee':'rgba(160,100,240,.9)');g.addColorStop(1,fl?'#ddd':'rgba(70,50,170,.85)');
+    cx.fillStyle=g;cx.beginPath();cx.ellipse(0,-10,82,64,0,Math.PI,TAU);
+    for(let k=0;k<=8;k++){const x=82-k*20.5;cx.quadraticCurveTo(x+10,30,x-10.25+(k===8?10.25:0),k===8?-10:20)}cx.closePath();cx.fill();
+    const pu=.5+.5*Math.sin(B.t*6);cx.fillStyle=`rgba(255,255,170,${.35+.4*pu})`;cx.beginPath();cx.arc(0,-28,18+pu*4,0,TAU);cx.fill();
+    cx.strokeStyle='rgba(255,255,200,.6)';cx.lineWidth=2;for(let k=0;k<3;k++){cx.beginPath();cx.moveTo(-10+k*10,-28);cx.lineTo(-30+k*30+rnd(-6,6),-52);cx.stroke()}
+    const[lx,ly]=lookAt(B,4);for(const sx_ of[-24,24]){cx.fillStyle='#fff';cx.beginPath();cx.ellipse(sx_,0,11,9,0,0,TAU);cx.fill();cx.fillStyle=rage?'#f33':'#203';cx.beginPath();cx.arc(sx_+lx,ly,5,0,TAU);cx.fill()}
+  },
+  wurm(B,fl,rage){
+    for(let i=9;i>=1;i--){const a=B.t*1.2+i*.55,x=Math.cos(a)*(40+i*6),y=-30+Math.sin(a)*(18+i*3)-i*4,r=30-i*1.6;
+      cx.fillStyle=fl?'#fff':(i%2?'#b5381c':'#d9552a');cx.beginPath();cx.arc(x,y,r,0,TAU);cx.fill();
+      cx.fillStyle='rgba(255,210,140,.25)';cx.beginPath();cx.arc(x-r*.3,y-r*.3,r*.4,0,TAU);cx.fill()}
+    cx.fillStyle=fl?'#fff':'#e0642e';cx.beginPath();cx.ellipse(0,20,48,42,0,0,TAU);cx.fill();
+    cx.strokeStyle=fl?'#fff':'#9a2e12';cx.lineWidth=4;for(let k=0;k<3;k++){cx.beginPath();cx.arc(0,20,34+k*6,Math.PI*1.15,Math.PI*1.85);cx.stroke()}
+    const pg=cx.createRadialGradient(0,38,2,0,38,26);pg.addColorStop(0,rage?'#fff':'#ffe');pg.addColorStop(.5,rage?'#f3a':'#f80');pg.addColorStop(1,'rgba(110,20,0,.95)');
+    cx.fillStyle=pg;cx.beginPath();cx.arc(0,38,24,0,TAU);cx.fill();
+    cx.fillStyle='#fff';for(let k=0;k<12;k++){const a=k/12*TAU;poly(cx,[[Math.cos(a-.12)*24,38+Math.sin(a-.12)*24],[Math.cos(a)*15,38+Math.sin(a)*15],[Math.cos(a+.12)*24,38+Math.sin(a+.12)*24]])}
+    cx.fillStyle=rage?'#f30':'#ff0';cx.beginPath();cx.ellipse(-28,6,7,5,.4,0,TAU);cx.fill();cx.beginPath();cx.ellipse(28,6,7,5,-.4,0,TAU);cx.fill();
+  },
 };
 function drawPlayer(){
   for(const w of wing){spr(SPR.wing,w.x,w.y);cx.fillStyle=`rgba(255,${150+Math.random()*100|0},60,.8)`;cx.fillRect(w.x-14,w.y-1.5,rnd(3,7),3)}
@@ -1157,7 +1263,7 @@ function drawBullets(){
   cx.globalAlpha=1;cx.globalCompositeOperation='source-over';
   for(const b of ebul){
     if(b.kind==='icicle'){cx.fillStyle='#bff';poly(cx,[[b.x-14,b.y],[b.x+16,b.y-6],[b.x+16,b.y+6]]);cx.fillStyle='#fff';poly(cx,[[b.x-10,b.y],[b.x+12,b.y-2],[b.x+12,b.y+2]]);continue}
-    const[o,i]=b.kind==='ice'?['#5cf','#eff']:b.kind==='spike'?['#cc3','#ffb']:b.kind==='orb'?['#a4f','#fdf']:['#f33','#ffd'];
+    const[o,i]=b.kind==='ice'?['#5cf','#eff']:b.kind==='spike'?['#cc3','#ffb']:b.kind==='orb'?['#a4f','#fdf']:b.kind==='fire'?['#f50','#ff9']:['#f33','#ffd'];
     cx.fillStyle=o;cx.beginPath();cx.arc(b.x,b.y,b.r+2,0,TAU);cx.fill();cx.fillStyle=i;cx.beginPath();cx.arc(b.x,b.y,b.r-1.5,0,TAU);cx.fill()}
   for(const w of waves){
     const gr=cx.createLinearGradient(w.x,0,w.x+90,0);gr.addColorStop(0,'rgba(255,255,255,.95)');gr.addColorStop(.3,'rgba(255,120,120,.6)');gr.addColorStop(1,'rgba(255,60,60,0)');
@@ -1483,7 +1589,7 @@ addEventListener('resize',()=>{if(!$('win').classList.contains('hidden'))resizeF
 refreshMenu();
 
 /* test hooks */
-window.BS={get G(){return G},get P(){return P},get wing(){return wing},get enemies(){return enemies},get gates(){return gates},update,startLevel,spawnBoss,get beams(){return beams},get lanes(){return lanes},get wells(){return wells},addWing,showWin,winLevel};
+window.BS={get G(){return G},get P(){return P},get wing(){return wing},get enemies(){return enemies},get gates(){return gates},update,startLevel,spawnBoss,get beams(){return beams},get lanes(){return lanes},get wells(){return wells},get corridors(){return corridors},get ringwaves(){return ringwaves},get strikes(){return strikes},get swalls(){return swalls},addWing,showWin,winLevel};
 </script>
 </body>
 </html>
